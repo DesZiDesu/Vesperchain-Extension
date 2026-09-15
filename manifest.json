@@ -1,0 +1,12 @@
+{
+  "display_name": "Vesperchain — The Black Ledger",
+  "loading_order": 40,
+  "requires": [],
+  "optional": [],
+  "js": "src/index.js",
+  "css": "styles/vesperchain.css",
+  "author": "DesZiDesu",
+  "version": "0.1.0",
+  "homePage": "https://github.com/DesZiDesu/Vesperchain-Extension",
+  "auto_update": true
+}
