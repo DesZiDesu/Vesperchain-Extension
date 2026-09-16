@@ -21,7 +21,7 @@ export function rasterSize(bytes) {
     }
     throw new Error('Choose a valid PNG or JPEG image.');
 }
-export async function optimizePortrait(file, doc = document) {
+export async function optimizePortrait(file, doc = document, chooseCrop = null) {
     if (!file || file.size > LIMIT || file.size === 0) throw new Error('Choose a PNG/JPEG up to 6 MB.');
     const bytes = await file.arrayBuffer(), [w,h] = rasterSize(bytes);
     if (!w || !h || w*h > 16000000 || w > 8192 || h > 8192) throw new Error('Portrait exceeds 16 megapixels or 8192 pixels per side.');
@@ -29,11 +29,13 @@ export async function optimizePortrait(file, doc = document) {
     const img = new win.Image();
     try {
         img.src = url; await img.decode();
+        const edge = Math.min(img.naturalWidth,img.naturalHeight);
+        const crop = chooseCrop ? await chooseCrop(img) : {x:(img.naturalWidth-edge)/2,y:(img.naturalHeight-edge)/2,edge};
+        if(!crop)return null;
         const canvas = doc.createElement('canvas'); canvas.width = canvas.height = 384;
         const ctx = canvas.getContext('2d'); if (!ctx) throw new Error('Image processing is unavailable.');
         ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-        const edge = Math.min(img.naturalWidth,img.naturalHeight);
-        ctx.drawImage(img,(img.naturalWidth-edge)/2,(img.naturalHeight-edge)/2,edge,edge,0,0,384,384);
+        ctx.drawImage(img,crop.x,crop.y,crop.edge,crop.edge,0,0,384,384);
         const blob = await new Promise(resolve => canvas.toBlob(resolve,'image/webp',0.9));
         if (!blob || blob.size > 200000) throw new Error('Portrait is too complex. Choose a smaller image.');
         return blob;

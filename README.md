@@ -1,6 +1,6 @@
 # Vesperchain — The Black Ledger
 
-**v0.2.0 · Chat mechanics and NPC presentation**
+**v0.2.1 · Chat mechanics and NPC presentation**
 
 A dark-fantasy interface with layered tab decks, original SVG marks, optional animated atmosphere, and persistent interface preferences. English and Thai interface labels are included.
 
@@ -79,7 +79,7 @@ The selected **Court Chronicle** design uses a heraldic portrait frame, a person
 - Main Chat text inherits SillyTavern's body, quote and emphasis colors live. The NPC surface is transparent so the user's chat background remains in control. There is no fixed black dialogue color.
 - AI NPC creation/update requires every identity field: name, role, age, pronouns, species, appearance, personality, background, goals, relationship, status, location, plus a stable ID. Undisclosed facts must be explicit null. Personal names appear in the header; occupations belong to role. Common job-only names and incomplete profiles are rejected, with the original reply left readable.
 - NPCs default to **Chat**. Open the NPC page or click a portrait to change that NPC to **Character**. Character profiles seed future chats under the same character/group; existing chats retain their historical snapshots. Demoting removes the reusable entry while keeping the current chat copy. The drawer also has a default scope for newly recorded NPCs.
-- Upload a **PNG/JPEG**, maximum 6 MB / 16 megapixels. The extension center-crops and re-encodes once to 384 × 384, at most 200 KB. SVG, animated PNG and unrecognized formats are rejected; no AI-provided image URL is fetched.
+- Upload a **PNG/JPEG**, maximum 6 MB / 16 megapixels. The extension lets you position/zoom the crop, then re-encodes once to 384 × 384, at most 200 KB. SVG, animated PNG and unrecognized formats are rejected; no AI-provided image URL is fetched.
 - Uploaded portraits display in a 1:1 square with straight corners (72px desktop / 56px mobile). NPCs without an image retain the initials banner.
 - Portraits use this browser's IndexedDB, lazy loading near visible messages, asynchronous decoding, fixed frame dimensions and a bounded object URL cache. They never enter AI prompts or chat JSON. Changing a profile scope copies its portrait. Images do **not** travel in checkpoint exports or automatically synchronize between devices; clearing site data removes them. Portrait upload/remove failures are visible in the profile panel.
 - Drawer switches independently control NPC rendering and portraits. The underlying raw messages remain available for native editing. Rendering is text-only, with paragraphs, line breaks, quotes and single-asterisk emphasis; rich HTML/media inside marked NPC passages is not executed.
@@ -117,3 +117,5 @@ Browser tests use a simulated SillyTavern host and cover all 16 routes at deskto
 The selected **Open Folio** narrative frame is installed in the chat renderer. Adjacent narration is grouped, remains outside dialogue, and never resets the current speaker. Plain narration-only replies also receive a frame; unlabelled speech and malformed markers fall back to native rendering rather than guessing a speaker. Disable the frame in Extensions → Vesperchain → General while keeping NPC dialogue; disabling NPC rendering restores native text entirely.
 
 Scene, NPC and narrative text follow SillyTavern's `--mainFontFamily`, `--mainFontSize`, body/quote/emphasis colors and inherited line height. Heading and metadata sizes are proportional. Ornate fonts and extension text-size controls remain for the drawer/decks, not these chat components. Decorative spacing stays extension-controlled. This is not a claim of compatibility with every custom CSS selector or Markdown feature: the safe NPC renderer supports text, paragraphs, quotations and emphasis, not arbitrary HTML or embedded media. Parchment contracts retain their own contrasting paper palette.
+
+Portrait editing: select an image, drag directly in the square preview, and pinch with two fingers on mobile. Desktop also offers a zoom slider, mouse drag/wheel and keyboard arrows/+/- on the preview. Reset restores the centered crop; Cancel keeps the existing image. Only Use image saves the final 384px crop. The source image is temporary and is not retained after the editor closes.

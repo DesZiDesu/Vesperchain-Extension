@@ -35,3 +35,5 @@ Automated: 22 pure tests plus the browser integration cover historical replay, a
 - Promote Chat to Character, start a new chat, and confirm that NPC is reusable while campaign scene/resources remain fresh. Demote and start another chat; the entry must no longer be seeded. Check the original chat retains its historical identity.
 - Regenerate, swipe, edit and delete speaker passages; no stale duplicate header or hidden native editor should remain. NPC rendering waits until generation ends; the last committed layout is stable during streaming.
 - Verify local portraits remain excluded from checkpoint exports and prompts. A new device needs a new portrait upload.
+
+- Portrait crop editor: drag and wheel/slider on desktop; direct one-finger drag and two-finger pinch on mobile with no slider. Verify reset, cancel, close and chat switch preserve the old image until Use image. Browser coverage includes mouse drag, CDP touch pinch/pan, saved 384px output and cancel/close preservation. Check gestures on physical iOS/Android devices too.

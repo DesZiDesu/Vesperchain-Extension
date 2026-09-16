@@ -162,3 +162,10 @@
 #chat .vc-npc-portrait.vc-has-portrait{box-sizing:border-box;height:72px;aspect-ratio:1;clip-path:none;border:1px solid var(--SmartThemeQuoteColor,#b99a64);border-radius:0}
 #chat .vc-npc-portrait.vc-has-portrait img{border-radius:0}
 @media(max-width:500px){#chat .vc-npc-portrait.vc-has-portrait{height:56px}}
+.vc-root .vc-crop-editor{margin:16px 0;padding:14px;border:1px solid var(--vc-line)}
+.vc-root .vc-crop-editor canvas{display:block;width:min(100%,320px);height:auto;aspect-ratio:1;margin:12px auto;border:1px solid var(--vc-accent);border-radius:0;touch-action:none;cursor:grab;max-width:100%;padding:0}
+.vc-root .vc-crop-editor canvas:active{cursor:grabbing}
+.vc-root .vc-crop-editor canvas:focus-visible{outline:2px solid var(--vc-accent);outline-offset:3px}
+.vc-root .vc-crop-slider{display:flex;align-items:center;gap:12px;margin:12px 0}.vc-root .vc-crop-slider input{min-width:0;flex:1}
+.vc-root .vc-crop-actions{display:flex;flex-wrap:wrap;gap:8px}.vc-root .vc-crop-actions button{flex:1 1 auto;min-height:44px}
+@media(pointer:coarse),(max-width:600px){.vc-root .vc-crop-slider{display:none}}

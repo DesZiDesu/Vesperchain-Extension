@@ -1,6 +1,7 @@
 import { esc, digest, copy } from './campaign.js';
 import { NPC_FIELDS, validateNpc, speakerSegments, groupedSegments, speechParts } from './npc-model.js';
 import { optimizePortrait, portraitStore } from './portraits.js';
+import { choosePortraitCrop } from './portrait-editor.js';
 import { icon } from './icons.js';
 
 export const NPC_LIBRARY = 'vesperchainNpcCharacters';
@@ -102,7 +103,7 @@ export function createNpcs(getContext, getConfig, getModel, changed, makeDialog,
         const {current,result}=getModel();if(!current)return;assertCurrent(current.id);
         const row=result.state.entities.npcs[id];if(!row)return;
         const chatId=current.id, p=row.profile;
-        const dialog=makeDialog(row.name,`${p?`<dl class="vc-npc-fields">${NPC_FIELDS.map(k=>`<div><dt>${esc(k)}</dt><dd>${esc(p[k]??l('ยังไม่เปิดเผย','Undisclosed'))}</dd></div>`).join('')}</dl>`:`<p>${l('โปรไฟล์เดิมยังไม่ครบ ให้ AI ส่ง npcProfiles ให้ครบก่อน','Legacy profile is incomplete. Ask the AI to supply every npcProfiles field.')}</p>`}<label class="vc-field">${l('ขอบเขตของ NPC นี้','This NPC’s scope')}<select data-npc-scope ${!p?'disabled':''}><option value="chat" ${scope(id)==='chat'?'selected':''}>Chat</option><option value="character" ${scope(id)==='character'?'selected':''}>Character</option></select></label><p>${l('Character ใช้เป็นข้อมูลเริ่มต้นของแชตใหม่ ไม่เขียนทับประวัติแชตอื่น การเปลี่ยนขอบเขตจะคัดลอกภาพไปด้วย','Character seeds new chats without rewriting other chat histories. Changing scope also copies the portrait.')}</p><label class="vc-field">${l('ภาพบุคคล · PNG / JPEG ไม่เกิน 6 MB','Portrait · PNG / JPEG up to 6 MB')}<input type="file" data-npc-image accept="image/png,image/jpeg"></label><p>${l('ครอปกลางภาพ 384 × 384 เก็บในอุปกรณ์นี้ ไม่แนบภาพไปใน prompt หรือ checkpoint','Center-cropped to 384 × 384; stored on this device, excluded from prompts and checkpoints.')}</p><button type="button" data-npc-image-remove>${l('ลบภาพในขอบเขตนี้','Remove portrait in this scope')}</button><p data-npc-image-status role="status"></p>`);
+        const dialog=makeDialog(row.name,`${p?`<dl class="vc-npc-fields">${NPC_FIELDS.map(k=>`<div><dt>${esc(k)}</dt><dd>${esc(p[k]??l('ยังไม่เปิดเผย','Undisclosed'))}</dd></div>`).join('')}</dl>`:`<p>${l('โปรไฟล์เดิมยังไม่ครบ ให้ AI ส่ง npcProfiles ให้ครบก่อน','Legacy profile is incomplete. Ask the AI to supply every npcProfiles field.')}</p>`}<label class="vc-field">${l('ขอบเขตของ NPC นี้','This NPC’s scope')}<select data-npc-scope ${!p?'disabled':''}><option value="chat" ${scope(id)==='chat'?'selected':''}>Chat</option><option value="character" ${scope(id)==='character'?'selected':''}>Character</option></select></label><p>${l('Character ใช้เป็นข้อมูลเริ่มต้นของแชตใหม่ ไม่เขียนทับประวัติแชตอื่น การเปลี่ยนขอบเขตจะคัดลอกภาพไปด้วย','Character seeds new chats without rewriting other chat histories. Changing scope also copies the portrait.')}</p><label class="vc-field">${l('ภาพบุคคล · PNG / JPEG ไม่เกิน 6 MB','Portrait · PNG / JPEG up to 6 MB')}<input type="file" data-npc-image accept="image/png,image/jpeg"></label><p>${l('ลากและบีบซูมก่อนบันทึกเป็น 384 × 384 ภาพเก็บในอุปกรณ์นี้ ไม่แนบใน prompt หรือ checkpoint','Drag and pinch before saving at 384 × 384; stored on this device, excluded from prompts and checkpoints.')}</p><button type="button" data-npc-image-remove>${l('ลบภาพในขอบเขตนี้','Remove portrait in this scope')}</button><p data-npc-image-status role="status"></p>`);
         const error=e=>{if(dialog.isConnected)dialog.querySelector('.vc-review-error').textContent=e.message;};
         on(dialog.querySelector('[data-npc-scope]'),'change',async e=>{
             if(uploadBusy){e.target.value=scope(id);return;}
@@ -118,7 +119,7 @@ export function createNpcs(getContext, getConfig, getModel, changed, makeDialog,
         on(dialog.querySelector('[data-npc-image]'),'change',async e=>{
             const file=e.target.files[0];if(!file || uploadBusy)return;
             uploadBusy=true;e.target.disabled=true;const expectedKey=imageKey(id);
-            try{assertCurrent(chatId);const blob=await optimizePortrait(file,doc);assertCurrent(chatId);if(imageKey(id)!==expectedKey)throw new Error('Scope changed. Choose the image again.');await media.set(expectedKey,blob);assertCurrent(chatId);epoch++;render();dialog.querySelector('[data-npc-image-status]').textContent=l('บันทึกภาพแล้ว','Portrait saved.');}
+            try{assertCurrent(chatId);dialog.querySelector('.vc-review-error').textContent='';const blob=await optimizePortrait(file,doc,img=>{assertCurrent(chatId);return dialog.isConnected && dialog.open ? choosePortraitCrop(img,dialog,l) : null;});if(!blob)return;assertCurrent(chatId);if(imageKey(id)!==expectedKey)throw new Error('Scope changed. Choose the image again.');await media.set(expectedKey,blob);assertCurrent(chatId);epoch++;render();dialog.querySelector('[data-npc-image-status]').textContent=l('บันทึกภาพแล้ว','Portrait saved.');}
             catch(err){error(err);}finally{uploadBusy=false;e.target.disabled=false;e.target.value='';}
         });
         on(dialog.querySelector('[data-npc-image-remove]'),'click',async()=>{

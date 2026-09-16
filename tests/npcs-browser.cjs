@@ -49,6 +49,27 @@ module.exports = async function npcSuite(browser, base, root) {
     await p.waitForFunction(()=>document.querySelector('.vc-review-error').textContent.includes('PNG'));
     const png=await p.evaluate(()=>{const c=document.createElement('canvas');c.width=800;c.height=800;const g=c.getContext('2d');g.fillStyle='#897052';g.fillRect(0,0,800,800);g.fillStyle='#33271d';g.fillRect(200,160,400,520);return c.toDataURL('image/png').split(',')[1];});
     await p.locator('[data-npc-image]').setInputFiles({name:'portrait.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+    const crop=p.locator('.vc-crop-editor canvas');await crop.waitFor();
+    await p.locator('.vc-crop-slider input').fill('2');
+    let rect=await crop.boundingBox();const originalX=Number(await crop.getAttribute('data-x'));
+    await p.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);await p.mouse.down();await p.mouse.move(rect.x+rect.width/2+40,rect.y+rect.height/2+20);await p.mouse.up();
+    assert.ok(Number(await crop.getAttribute('data-x'))<originalX);
+    await p.locator('[data-crop-reset]').click();assert.equal(await crop.getAttribute('data-zoom'),'1');
+    await p.setViewportSize({width:390,height:1000});await crop.scrollIntoViewIfNeeded();
+    assert.equal(await p.locator('.vc-crop-slider').isVisible(),false);
+    const cdp=await context.newCDPSession(p);await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:2});
+    rect=await crop.boundingBox();const cx=rect.x+rect.width/2,cy=rect.y+rect.height/2;
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:cx-30,y:cy,id:1},{x:cx+30,y:cy,id:2}]});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:cx-60,y:cy,id:1},{x:cx+60,y:cy,id:2}]});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    assert.ok(Number(await crop.getAttribute('data-zoom'))>1.5);
+    const pinchX=Number(await crop.getAttribute('data-x'));
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:cx,y:cy,id:1}]});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:cx+30,y:cy+20,id:1}]});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    assert.ok(Number(await crop.getAttribute('data-x'))<pinchX);
+    await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:false});await cdp.detach();
+    await p.locator('[data-crop-save]').click();
     await p.waitForFunction(()=>document.querySelector('[data-npc-image-status]').textContent.length>0);
     await p.locator('[data-review-close]').click();await p.locator('[data-npc-open=mara] img').first().waitFor();
     assert.equal(await p.locator('[data-npc-open=mara] img').first().evaluate(n=>n.naturalWidth),384);
@@ -59,6 +80,17 @@ module.exports = async function npcSuite(browser, base, root) {
         assert.notEqual(await p.locator('[data-npc-open=edric]').first().evaluate(n=>getComputedStyle(n).clipPath),'none');
     }
     await p.setViewportSize({width:1000,height:1000});
+    // Cancelling or closing a pending crop must preserve the existing portrait.
+    const savedPortrait=await p.locator('[data-npc-open=mara] img').first().getAttribute('src');
+    await p.locator('[data-npc-open=mara]').first().click();
+    await p.locator('[data-npc-image]').setInputFiles({name:'replacement.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+    await p.locator('[data-crop-cancel]').click();
+    await p.waitForFunction(()=>!document.querySelector('[data-npc-image]').disabled);
+    assert.equal(await p.locator('[data-npc-open=mara] img').first().getAttribute('src'),savedPortrait);
+    await p.locator('[data-npc-image]').setInputFiles({name:'replacement.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+    await p.locator('[data-crop-save]').waitFor();await p.locator('[data-review-close]').click();
+    await p.waitForFunction(()=>!document.querySelector('.vc-crop-editor'));
+    assert.equal(await p.locator('[data-npc-open=mara] img').first().getAttribute('src'),savedPortrait);
     await p.locator('[data-npc-open=mara]').first().click();await p.locator('[data-npc-scope]').selectOption('character');
     await p.waitForFunction(()=>SillyTavern.getContext().extensionSettings.vesperchainNpcCharacters?.['character:vesper.png']?.mara?.name==='Mara Vey');
     await p.locator('[data-review-close]').click();
