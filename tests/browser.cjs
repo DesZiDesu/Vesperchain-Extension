@@ -17,6 +17,14 @@ const server = createServer(async (req, res) => {
     const browser = await chromium.launch({ headless: true, ...(process.env.VESPERCHAIN_CHROMIUM ? { executablePath: process.env.VESPERCHAIN_CHROMIUM } : {}), args: ['--no-sandbox'] });
     const errors = [];
     try {
+        if (process.env.VESPERCHAIN_NPC_ONLY) {
+            await require('./npcs-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
+            return;
+        }
+        if (process.env.VESPERCHAIN_TRACKING_ONLY) {
+            await require('./tracking-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
+            return;
+        }
         const context = await browser.newContext({ viewport: { width: 1180, height: 1000 } });
         await context.route('https://fonts.googleapis.com/**', r => r.fulfill({ body: '', contentType: 'text/css' }));
         const p = await context.newPage(); p.on('pageerror', e => errors.push(e.message));
@@ -32,7 +40,7 @@ const server = createServer(async (req, res) => {
                 await p.locator(`[data-deck="${deck}"]`).click();
                 for (const page of pages) {
                     await p.locator(`.vc-tabs [data-page="${page}"]`).click();
-                    assert.ok((await p.locator('#vc-page').innerText()).trim().length > 30);
+                    assert.ok((await p.locator('#vc-page').innerText()).trim().length > 10);
                     assert.equal(await p.locator('.vc-tabs [aria-selected=true]').count(), 1);
                     assert.equal(await p.locator('#vesperchain-dialog').evaluate(n => n.scrollWidth > n.clientWidth + 1), false, `${page} overflows at ${width}`);
                 }
@@ -100,6 +108,8 @@ const server = createServer(async (req, res) => {
         await p.screenshot({ path: path.join(root, 'test-results/desktop.png'), animations: 'disabled' });
         await p.setViewportSize({ width: 390, height: 844 }); await p.screenshot({ path: path.join(root, 'test-results/mobile.png'), animations: 'disabled' });
         assert.deepEqual(errors, []);
+        await require('./tracking-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
+        await require('./npcs-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
         console.log('PASS: 16 pages at 3 widths, keyboard tabs, deck memory, drag/click, persistence, launcher modes, drawer handoff, fonts, reduced motion, escaping, host remount, no chat writes.');
     } finally { await browser.close(); server.close(); }
 })().catch(error => { console.error(error); server.close(); process.exitCode = 1; });

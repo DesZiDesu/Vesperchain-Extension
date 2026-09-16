@@ -4,9 +4,11 @@ export const DEFAULTS = Object.freeze({
     theme: 'obsidian', language: 'th', density: 'comfortable', textSize: 16,
     ornateFonts: true, ambient: true, particles: true, glow: true,
     transitions: true, pressEffects: true, reducedMotion: false,
+    npcHeaders: true, narrativeHeaders: true, npcPortraits: true, npcDefaultScope: 'chat',
+    sceneTracker: true, chatContracts: true, injectTrackingPrompt: true,
     intensity: 55, speed: 'normal', position: Object.freeze({ x: 0.95, y: 0.72 }),
 });
-const choices = { theme: ['obsidian', 'moonstone'], language: ['th', 'en'],
+const choices = { npcDefaultScope: ['chat', 'character'], theme: ['obsidian', 'moonstone'], language: ['th', 'en'],
     density: ['comfortable', 'compact'], speed: ['slow', 'normal', 'fast'] };
 export const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 const finite = (n, fallback) => typeof n === 'number' && Number.isFinite(n) ? n : fallback;

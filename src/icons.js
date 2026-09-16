@@ -1,5 +1,7 @@
 // Original, bundled vector marks. No icon CDN, emoji, or icon-font dependency.
 const paths = {
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18M7 14h2m4 0h2m-8 4h2"/>',
+    weather: '<path d="M7 16a4 4 0 0 1-1-8 6 6 0 0 1 11-1 4.5 4.5 0 0 1 1 9H7Z"/>', 
     book: '<path d="M12 5C9 3 5 3 2 4v15c4-1 7-1 10 1 3-2 6-2 10-1V4c-3-1-7-1-10 1Zm0 0v15M5 8l4 1M15 9l4-1M5 12l4 1M15 13l4-1"/>',
     castle: '<path d="M3 21V7h4V3h3v4h4V3h3v4h4v14ZM9 21v-6a3 3 0 0 1 6 0v6M6 10v2m12-2v2"/>',
     scales: '<path d="M12 3v18M7 21h10M4 6h16M6 6l-4 8h8L6 6Zm12 0-4 8h8l-4-8ZM2 14c1 4 7 4 8 0m4 0c1 4 7 4 8 0"/>',

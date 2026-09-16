@@ -1,0 +1,96 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+module.exports = async function npcSuite(browser, base, root) {
+    const context = await browser.newContext({ viewport: { width: 1000, height: 1000 } });
+    await context.route('https://fonts.googleapis.com/**', r => r.fulfill({body:'',contentType:'text/css'}));
+    const p=await context.newPage(), errors=[];p.on('pageerror',e=>errors.push(e.message));
+    await p.goto(base+'/tests/tracking-host.html');await p.locator('[data-character-tracking]').check();
+    await p.addStyleTag({content:':root{--SmartThemeBodyColor:rgb(220,215,200);--SmartThemeQuoteColor:rgb(240,170,90);--SmartThemeEmColor:rgb(150,190,170);--SmartThemeChatTintColor:#1a1a1a;--mainFontSize:16px}'});
+    const profile=(id,name)=>({id,name,role:'Inn Keeper',age:'34',pronouns:'she/her',species:'Human',appearance:'Black hair; green eyes',personality:'Thoughtful',background:'Runs the quay inn',goals:'Keep the inn open',relationship:'Acquaintance',status:'Calm',location:'Cinder Quay'});
+    const mara=profile('mara','Mara Vey'),edric={...profile('edric','Edric Vale'),role:'Night Watch',pronouns:'he/him'};
+    const add=async(eventId,baseRevision,narrative,fields={})=>p.evaluate(async x=>fixture.add({version:1,eventId:x.eventId,baseRevision:x.baseRevision,...x.fields},false,x.narrative),{eventId,baseRevision,narrative,fields});
+    const story='The candle flickers.\n\n[[vc:mara]]*She lays down the letter.*\n\n“Read it carefully.”\n\n“Your name belongs here.”[[/vc]]\n\nRain brushes the window.\n\n[[vc:mara]]“Take your time.”[[/vc]]\n\n[[vc:edric]]“The gate closes soon.”[[/vc]]\n\n[[vc:edric]]“I will wait outside.”[[/vc]]\n\n[[vc:mara]]“Then let us begin.”[[/vc]]';
+    await add('npc1',0,story,{npcProfiles:[mara,edric],scene:{region:'Avarenth',city:'Vespergate',place:'Cinder Quay',room:'The Lantern Inn',day:7,month:'Seedwake',year:713,period:'Night',weather:'Rain'}});
+    await p.locator('.vc-npc-header').first().waitFor();
+    assert.deepEqual(await p.locator('.vc-npc-header h3').allTextContents(),['Mara Vey','Edric Vale','Mara Vey']);
+    assert.equal(await p.locator('.vc-npc-dialogue').count(),5);
+    assert.equal(await p.locator('.vc-npc-dialogue em').count(),0);
+    assert.equal(await p.locator('.vc-npc-narration em').first().innerText(),'She lays down the letter.');
+    assert.ok((await p.locator('.vc-npc-dialogue').allTextContents()).every(text=>!text.includes('She lays')));
+    assert.equal(await p.locator('.vc-npc-original').count(),1);
+    assert.equal(await p.locator('.vc-narrative-heading').count(),2);
+    assert.equal(await p.locator('.vc-narrative-folio .vc-npc-dialogue').count(),0);
+    await p.locator('[data-config=narrativeHeaders]').uncheck();
+    assert.equal(await p.locator('.vc-narrative-heading').count(),0);
+    assert.equal(await p.locator('.vc-npc-dialogue').count(),5);
+    await p.locator('[data-config=narrativeHeaders]').check();
+    await p.addStyleTag({content:':root{--mainFontSize:22px;--mainFontFamily:monospace}#chat .mes_block{line-height:2}'});
+    for(const selector of ['.vc-npc-message','.vc-message-tracker']) {
+        const type=await p.locator(selector).first().evaluate(n=>{const s=getComputedStyle(n);return [s.fontSize,s.fontFamily,s.lineHeight];});
+        assert.equal(type[0],'22px');assert.equal(type[1],'monospace');assert.notEqual(type[2],'normal');
+    }
+    assert.equal(await p.locator('.vc-npc-nameplate h3').first().evaluate(n=>getComputedStyle(n).fontFamily),'monospace');
+    assert.equal(await p.locator('.vc-scene-place h3').first().evaluate(n=>getComputedStyle(n).fontFamily),'monospace');
+    await p.addStyleTag({content:':root{--mainFontSize:16px;--mainFontFamily:serif}'});
+    assert.equal(await p.locator('.mes_block').evaluate(n=>n.firstElementChild.classList.contains('vc-message-tracker')),true);
+    assert.equal(await p.locator('.vc-npc-message q').first().evaluate(n=>getComputedStyle(n).color),'rgb(240, 170, 90)');
+    assert.equal(await p.locator('.vc-npc-message em').first().evaluate(n=>getComputedStyle(n).color),'rgb(150, 190, 170)');
+    await p.evaluate(()=>document.documentElement.style.setProperty('--SmartThemeQuoteColor','rgb(70, 50, 20)'));
+    assert.equal(await p.locator('.vc-npc-message q').first().evaluate(n=>getComputedStyle(n).color),'rgb(70, 50, 20)');
+    await p.evaluate(()=>document.documentElement.style.removeProperty('--SmartThemeQuoteColor'));
+    // Reconciliation and host redraw do not duplicate headers or recreate stable nodes.
+    const stable=await p.locator('.vc-npc-header').first().elementHandle();await p.evaluate(()=>fixture.emit('CHARACTER_MESSAGE_RENDERED',0));assert.equal(await stable.evaluate(n=>n.isConnected),true);
+    await add('npc2',1,'[[vc:mara]]“One more thing.”[[/vc]]');assert.equal(await p.locator('.mes').nth(1).locator('.vc-npc-header').count(),0);
+    // Per-chat portrait, invalid SVG rejection and a decoded optimized image.
+    await p.locator('[data-npc-open=mara]').first().click();
+    assert.equal(await p.locator('[data-npc-scope]').inputValue(),'chat');
+    await p.locator('[data-npc-image]').setInputFiles({name:'unsafe.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg onload="alert(1)"></svg>')});
+    await p.waitForFunction(()=>document.querySelector('.vc-review-error').textContent.includes('PNG'));
+    const png=await p.evaluate(()=>{const c=document.createElement('canvas');c.width=800;c.height=800;const g=c.getContext('2d');g.fillStyle='#897052';g.fillRect(0,0,800,800);g.fillStyle='#33271d';g.fillRect(200,160,400,520);return c.toDataURL('image/png').split(',')[1];});
+    await p.locator('[data-npc-image]').setInputFiles({name:'portrait.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+    await p.waitForFunction(()=>document.querySelector('[data-npc-image-status]').textContent.length>0);
+    await p.locator('[data-review-close]').click();await p.locator('[data-npc-open=mara] img').first().waitFor();
+    assert.equal(await p.locator('[data-npc-open=mara] img').first().evaluate(n=>n.naturalWidth),384);
+    await p.locator('[data-npc-open=mara].vc-has-portrait').first().waitFor();
+    for(const width of [1000,390]){await p.setViewportSize({width,height:1000});
+        const square=await p.locator('[data-npc-open=mara]').first().evaluate(n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);return[r.width,r.height,s.borderRadius,s.clipPath]});
+        assert.equal(square[0],square[1]);assert.equal(square[2],'0px');assert.equal(square[3],'none');
+        assert.notEqual(await p.locator('[data-npc-open=edric]').first().evaluate(n=>getComputedStyle(n).clipPath),'none');
+    }
+    await p.setViewportSize({width:1000,height:1000});
+    await p.locator('[data-npc-open=mara]').first().click();await p.locator('[data-npc-scope]').selectOption('character');
+    await p.waitForFunction(()=>SillyTavern.getContext().extensionSettings.vesperchainNpcCharacters?.['character:vesper.png']?.mara?.name==='Mara Vey');
+    await p.locator('[data-review-close]').click();
+    // Character reuse seeds only the opted-in identity; other Chat NPCs and campaign progress stay absent.
+    await p.evaluate(()=>fixture.switchChat('npc-new'));
+    let result=await p.evaluate(async()=>(await __vesperchainExtension).tracking.getResult());
+    assert.equal(result.state.entities.npcs.mara.name,'Mara Vey');assert.equal(result.state.entities.npcs.edric,undefined);assert.equal(result.state.scene.city,null);
+    await add('new1',0,'[[vc:mara]]“Welcome back.”[[/vc]]');await p.locator('[data-npc-open=mara] img').waitFor();
+    await p.locator('[data-npc-open=mara]').click();await p.locator('[data-npc-scope]').selectOption('chat');
+    await p.waitForFunction(()=>!SillyTavern.getContext().extensionSettings.vesperchainNpcCharacters?.['character:vesper.png']?.mara);
+    await p.locator('[data-review-close]').click();await p.locator('[data-npc-open=mara] img').waitFor();
+    await p.reload();await p.locator('[data-npc-open=mara] img').waitFor();
+    await p.evaluate(()=>fixture.switchChat('npc-third'));
+    result=await p.evaluate(async()=>(await __vesperchainExtension).tracking.getResult());assert.deepEqual(result.state.entities.npcs,{});
+    await add('narration-only',0,'Rain falls on the empty quay.');
+    assert.equal(await p.locator('.vc-narrative-heading').count(),1);
+    assert.equal(await p.locator('.vc-npc-header').count(),0);
+    // Original campaign and Chat-only identity survive switches.
+    await p.evaluate(()=>fixture.switchChat('chat-a'));assert.equal(await p.locator('.vc-npc-header').count(),3);
+    result=await p.evaluate(async()=>(await __vesperchainExtension).tracking.getResult());assert.equal(result.state.entities.npcs.edric.name,'Edric Vale');
+    await p.locator('[data-config=npcHeaders]').uncheck();assert.equal(await p.locator('.vc-npc-message').count(),0);assert.equal(await p.locator('.vc-npc-original').count(),0);
+    await p.locator('[data-config=npcHeaders]').check();assert.equal(await p.locator('.vc-npc-header').count(),3);
+    await p.locator('[data-config=npcPortraits]').uncheck();assert.equal(await p.locator('.vc-npc-portrait img').count(),0);
+    await p.locator('[data-config=npcPortraits]').check();await p.locator('[data-npc-open=mara]').first().scrollIntoViewIfNeeded();await p.locator('[data-npc-open=mara] img').first().waitFor();
+    // Host edit mode must expose native text instead of an obsolete styled duplicate.
+    await p.evaluate(()=>{const t=document.createElement('textarea');t.className='mes_edit_textarea';document.querySelector('.mes_block').append(t);});
+    await p.waitForFunction(()=>!document.querySelector('.mes:first-child .vc-npc-original'));
+    await p.evaluate(()=>document.querySelector('.mes_edit_textarea').remove());await p.locator('.vc-npc-message').first().waitFor();
+    for(const width of [1000,390,320]){await p.setViewportSize({width,height:1100});assert.equal(await p.locator('#chat').evaluate(n=>n.scrollWidth>n.clientWidth+1),false);}
+    await fs.mkdir(path.join(root,'test-results'),{recursive:true});await p.setViewportSize({width:850,height:1300});
+    await p.locator('.mes').first().screenshot({path:path.join(root,'test-results/npc-scene-desktop.png')});
+    await p.setViewportSize({width:390,height:1000});await p.locator('.mes').first().screenshot({path:path.join(root,'test-results/npc-scene-mobile.png')});
+    assert.deepEqual(errors,[]);await context.close();
+    console.log('PASS: NPC speaker grouping, complete names, host quote/emphasis colors, optimized local portraits, scope promotion/demotion, reload, edit mode, toggles and responsive chat.');
+};

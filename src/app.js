@@ -1,6 +1,7 @@
 import { KEY, DEFAULTS, normalize, launcherVisibility, motionAllowed, screenPosition, relativePosition } from './config.js';
 import { DECKS, PAGES } from './catalog.js';
 import { icon } from './icons.js';
+import { createTracking } from './tracking.js';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const FONT_URL = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=IM+Fell+English&family=Noto+Serif+Thai:wght@400;500;600&display=swap';
@@ -14,6 +15,7 @@ export function createApp(context, doc = document) {
     let config = normalize(original), drawer, dialog, wand, floating, fontLink;
     let active = 'home', settingsTab = 'general', returnFocus, dragging, suppressClick = false, destroyed = false;
     const remembered = new Map(), animations = new Set();
+    let tracking;
     const l = (th, en) => config.language === 'th' ? th : en;
     const viewport = () => ({ width: win.visualViewport?.width || win.innerWidth, height: win.visualViewport?.height || win.innerHeight,
         left: win.visualViewport?.offsetLeft || 0, top: win.visualViewport?.offsetTop || 0 });
@@ -68,6 +70,7 @@ export function createApp(context, doc = document) {
         if (!config.enabled) close();
         if (key === 'language') { renderDrawer(); if (dialog?.open) renderPage(); }
         syncControls();
+        tracking?.refresh();
     }
 
     function check(key, th, en, hint = '') {
@@ -82,10 +85,18 @@ export function createApp(context, doc = document) {
     function renderDrawer() {
         const wasOpen = drawer?.querySelector('details')?.open ?? true;
         if (!drawer) return;
-        drawer.innerHTML = `<details ${wasOpen ? 'open' : ''}><summary><span class="vc-brand-mark">${icon('book')}</span><span><strong>Vesperchain</strong><small>The Black Ledger · 0.1.0</small></span>${icon('chevron')}</summary>
+        drawer.innerHTML = `<details ${wasOpen ? 'open' : ''}><summary><span class="vc-brand-mark">${icon('book')}</span><span><strong>Vesperchain</strong><small>The Black Ledger · 0.2.0-dev</small></span>${icon('chevron')}</summary>
           <div class="vc-settings-content"><div class="vc-config-tabs" role="tablist" aria-label="${l('หมวดตั้งค่า', 'Settings sections')}">${[['general', l('ทั่วไป', 'General')], ['appearance', l('รูปลักษณ์', 'Appearance')], ['motion', l('เอฟเฟกต์', 'Effects')]].map(([key, title]) => `<button type="button" role="tab" data-settings-tab="${key}" id="vc-config-${key}" aria-controls="vc-config-panel" aria-selected="${settingsTab === key}" tabindex="${settingsTab === key ? 0 : -1}">${title}</button>`).join('')}</div>
           <div id="vc-config-panel" role="tabpanel" aria-labelledby="vc-config-${settingsTab}">${settingsTab === 'general' ?
             check('enabled', 'เปิดใช้ Vesperchain', 'Enable Vesperchain') +
+            `<label class="vc-option"><span>${l('ติดตามแชตของตัวละครนี้', 'Track this character’s chats')}<small>${l('Scope: Character · แชตใหม่เริ่มสถานะใหม่', 'Character scope · New chats start fresh')}</small></span><input type="checkbox" data-character-tracking ${tracking?.isCharacterEnabled() ? 'checked' : ''}></label>` +
+            check('sceneTracker', 'Scene tracker เหนือข้อความ AI', 'Scene tracker above AI messages') +
+            check('npcHeaders', 'แสดง Header และ Dialogue ของ NPC', 'Show NPC headers & dialogue') +
+            check('narrativeHeaders', 'กรอบบทบรรยาย Open Folio (เมื่อเปิดระบบ NPC)', 'Open Folio narration frames (with NPC rendering)') +
+            check('npcPortraits', 'แสดงภาพ NPC', 'Show NPC portraits') +
+            select('npcDefaultScope', 'ขอบเขตเริ่มต้นของ NPC ใหม่', 'New NPC default scope', [['chat', 'Chat'], ['character', 'Character']]) +
+            check('chatContracts', 'แสดงใบสัญญาใน Main Chat', 'Show parchment contracts in Main Chat') +
+            check('injectTrackingPrompt', 'ส่งสถานะและกติกาติดตามให้ AI', 'Include tracking protocol in Main Chat', l('ใช้คำตอบหลัก ไม่มีการเรียก AI เพิ่ม', 'Uses the normal reply; no additional AI request')) +
             check('showWand', 'แสดงปุ่มใน Wand menu', 'Show Wand menu entry') +
             check('showFloating', 'แสดงปุ่มลอยลากได้', 'Show draggable launcher', l('ลากเพื่อย้าย · ปุ่มลูกศรบนคีย์บอร์ดขยับได้', 'Drag to move · Arrow keys also move the launcher')) +
             select('language', 'ภาษาอินเทอร์เฟซ', 'Interface language', [['th', 'ไทย'], ['en', 'English']]) +
@@ -129,6 +140,7 @@ export function createApp(context, doc = document) {
             if (action === 'reset-position') update('position', { ...DEFAULTS.position });
         });
         on(drawer, 'input', e => {
+            if (e.target.matches('[data-character-tracking]')) { try { tracking?.setCharacterEnabled(e.target.checked); } catch (error) { drawer.querySelector('.vc-save-note').textContent = error.message; } return; }
             const input = e.target.closest('[data-config]'); if (!input) return;
             update(input.dataset.config, input.type === 'checkbox' ? input.checked : input.type === 'range' ? Number(input.value) : input.value);
         });
@@ -213,7 +225,7 @@ export function createApp(context, doc = document) {
         dialog.innerHTML = `<div class="vc-atmosphere" aria-hidden="true"><div class="vc-mist"></div><div class="vc-orbit"></div><div class="vc-motes">${Array.from({ length: 16 }, (_, i) => `<i style="--n:${i};left:${(i * 37) % 100}%;top:${(i * 23) % 100}%"></i>`).join('')}</div></div>
           <header class="vc-header"><div class="vc-wordmark"><span class="vc-crest">${icon('crown')}</span><div><span class="vc-eyebrow">THE BLACK LEDGER</span><h1 id="vc-title">Vesperchain</h1></div></div><div class="vc-header-actions"><button type="button" data-command="drawer" aria-label="Settings">${icon('gear')}</button><button type="button" data-command="close" aria-label="Close">${icon('close')}</button></div></header>
           <div class="vc-context"></div><div class="vc-body"><nav class="vc-decks" role="tablist" aria-label="System decks"></nav><div class="vc-book" id="vc-deck-panel" role="tabpanel"><div class="vc-breadcrumb"></div><nav class="vc-tabs" role="tablist" aria-label="Deck pages"></nav><section class="vc-page" id="vc-page" role="tabpanel"></section></div></div>
-          <footer class="vc-footer"><span>${icon('gem')}<span>INTERFACE FOUNDATION · 0.1</span></span><button type="button" data-command="drawer">${icon('spark')}<span class="vc-customize">Appearance & effects</span></button></footer>`;
+          <footer class="vc-footer"><span>${icon('gem')}<span>THE LIVING LEDGER · 0.2</span></span><button type="button" data-command="drawer">${icon('spark')}<span class="vc-customize">Appearance & effects</span></button></footer>`;
         doc.body.append(dialog);
         on(dialog, 'click', e => {
             if (e.target === dialog) {
@@ -248,10 +260,13 @@ export function createApp(context, doc = document) {
         dialog.querySelector('.vc-tabs').innerHTML = deck.pages.map(id => `<button type="button" role="tab" id="vc-tab-${id}" data-page="${id}" aria-controls="vc-page" aria-selected="${id === active}" tabindex="${id === active ? 0 : -1}">${l(PAGES[id][0], PAGES[id][1])}</button>`).join('');
         const page = dialog.querySelector('.vc-page'); page.setAttribute('aria-labelledby', `vc-tab-${active}`);
         const heading = `<div class="vc-section-heading"><span class="vc-eyebrow">${data[1]}</span><h2>${l(data[0], data[1])}</h2><p>${l(data[2], data[3])}</p></div>`;
-        if (active === 'home') {
+        const live = active === 'settings' ? null : tracking?.livePage(active);
+        if (live !== null && live !== undefined) {
+            page.innerHTML = heading + live;
+        } else if (active === 'home') {
             page.innerHTML = `<div class="vc-hero"><div class="vc-hero-copy"><span class="vc-eyebrow">CHAPTER I / AN UNWRITTEN FORTUNE</span><h2>${l('ใต้เงานคร<br>เหนือคำสาบาน', 'Beneath the city.<br>Beyond the oath.')}</h2><p>${l('เปิดสมุดบัญชีของคุณ แล้วเลือกเส้นทางถัดไป', 'Open your ledger. Choose the next road.')}</p><button type="button" class="vc-primary" data-page="shop">${l('สำรวจร้านและคอก', 'Explore the menagerie')}${icon('arrow')}</button></div><div class="vc-sigil" aria-hidden="true"><div class="vc-sigil-ring"></div><div class="vc-sigil-inner">${icon('book')}</div><span>V</span></div></div>
               <div class="vc-home-links">${[['contracts', 'scales', l('ข้อเสนอและคำสาบาน', 'Offers & obligations')], ['travel', 'compass', l('เส้นทางแห่ง Avarenth', 'Roads of Avarenth')], ['codex', 'book', l('หอจดหมายเหตุ', 'The veiled archive')]].map(([id, mark, title]) => `<button type="button" data-page="${id}">${icon(mark)}<span>${title}</span>${icon('arrow')}</button>`).join('')}</div>
-              <p class="vc-phase-note">${l('เริ่มต้นด้วยอินเทอร์เฟซ · ระบบเกมและการเชื่อม AI ยังไม่เปิดใช้งาน', 'Interface foundation · Game simulation and AI integration are not connected yet.')}</p>`;
+              <p class="vc-phase-note">${l('ข้อมูลอ้างอิง · ดำเนินเรื่องราวใน Main Chat', 'Reference information · Continue the story in Main Chat.')}</p>`;
         } else if (active === 'settings') {
             page.innerHTML = heading + `<article class="vc-reference"><span class="vc-reference-icon">${icon('gear')}</span><h3>${l('ปรับแต่งจาก Extensions drawer', 'Customize in the Extensions drawer')}</h3><p>${l('ตัวเปิด UI ธีม ฟอนต์ ความหนาแน่น และเอฟเฟกต์ทั้งหมดอยู่ในหน้าตั้งค่าเดียวกัน', 'Launchers, palettes, typography, spacing, and effects live together in one settings panel.')}</p><button type="button" class="vc-primary" data-command="drawer">${l('เปิดหน้าตั้งค่า', 'Open settings')}${icon('arrow')}</button></article>`;
         } else {
@@ -295,11 +310,14 @@ export function createApp(context, doc = document) {
     on(win, 'resize', placeFloating); on(win.visualViewport, 'resize', placeFloating); on(win.visualViewport, 'scroll', placeFloating);
     on(media, 'change', applyAppearance);
     on(doc, 'visibilitychange', () => { if (doc.hidden) stopAnimations(); applyAppearance(); });
-    const ctx = context(), changed = ctx.event_types?.CHAT_CHANGED;
+    const ctx = context(), changed = (ctx.eventTypes || ctx.event_types)?.CHAT_CHANGED;
     if (changed) ctx.eventSource?.on(changed, renderContext);
+    tracking = createTracking(context, () => config, doc);
+    tracking.subscribe(() => { if (dialog?.open) renderPage(); const input = drawer?.querySelector('[data-character-tracking]'); if (input) input.checked = tracking.isCharacterEnabled(); });
     mount();
     return { open, close, openDrawer, getConfig: () => normalize(config),
-        destroy() { destroyed = true; close(); abort.abort(); observer.disconnect(); stopAnimations();
+        tracking,
+        destroy() { destroyed = true; close(); abort.abort(); observer.disconnect(); stopAnimations(); tracking.destroy();
             if (changed) ctx.eventSource?.removeListener?.(changed, renderContext);
             [drawer, dialog, wand, floating, fontLink].forEach(n => n?.remove());
         } };
