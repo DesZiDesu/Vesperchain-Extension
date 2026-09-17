@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vesperchain host fixture</title>
-<link rel="stylesheet" href="/styles/vesperchain.css">
+<link rel="stylesheet" href="/dist/0.2.2/vesperchain.css">
 <style>body{margin:0;padding:16px;background:#202020;color:#eee;font-family:system-ui}#extensions-settings-button{max-width:420px}#extensionsMenu{display:block;margin:20px 0}.drawer-content{display:none}.drawer-content.openDrawer{display:block}button{min-height:44px}</style></head>
 <body><button id="extensionsMenuButton" aria-expanded="true">Wand</button><div id="extensionsMenu"></div>
 <div id="extensions-settings-button" class="drawer"><button class="drawer-toggle">Extensions</button><div class="drawer-content openDrawer"><div id="extensions_settings2"></div></div></div>
@@ -15,4 +15,4 @@ window.SillyTavern = { getContext: () => ctx };
 window.changeChat = name => { ctx.name2 = name; listeners.get('chat_changed')?.(); };
 document.querySelector('.drawer-toggle').onclick = () => document.querySelector('.drawer-content').classList.toggle('openDrawer');
 document.querySelector('#extensionsMenuButton').onclick = () => { const b = document.querySelector('#extensionsMenuButton'); b.setAttribute('aria-expanded', String(b.getAttribute('aria-expanded') !== 'true')); document.querySelector('#extensionsMenu').hidden = b.getAttribute('aria-expanded') !== 'true'; };
-</script><script type="module" src="/src/index.js"></script></body></html>
+</script><script type="module" src="/dist/0.2.2/index.js"></script></body></html>

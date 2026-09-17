@@ -4,8 +4,15 @@ const path = require('node:path');
 module.exports = async function npcSuite(browser, base, root) {
     const context = await browser.newContext({ viewport: { width: 1000, height: 1000 } });
     await context.route('https://fonts.googleapis.com/**', r => r.fulfill({body:'',contentType:'text/css'}));
+    // Old cacheable module URLs may contain obsolete code; the release must not use them.
+    const staleRequests=[];
+    await context.route('**/src/*.js*',r=>{staleRequests.push(r.request().url());return r.fulfill({contentType:'text/javascript',body:'throw new Error("Stale unversioned module loaded")'});});
     const p=await context.newPage(), errors=[];p.on('pageerror',e=>errors.push(e.message));
     await p.goto(base+'/tests/tracking-host.html');await p.locator('[data-character-tracking]').check();
+    await p.locator('[data-command=npcs]').click();
+    assert.equal(await p.locator('.vc-tabs [data-page=npc]').getAttribute('aria-selected'),'true');
+    assert.ok((await p.locator('#vc-page').innerText()).includes('ยังไม่มี NPC'));
+    await p.locator('#vesperchain-dialog [data-command=close]').click();
     await p.addStyleTag({content:':root{--SmartThemeBodyColor:rgb(220,215,200);--SmartThemeQuoteColor:rgb(240,170,90);--SmartThemeEmColor:rgb(150,190,170);--SmartThemeChatTintColor:#1a1a1a;--mainFontSize:16px}'});
     const profile=(id,name)=>({id,name,role:'Inn Keeper',age:'34',pronouns:'she/her',species:'Human',appearance:'Black hair; green eyes',personality:'Thoughtful',background:'Runs the quay inn',goals:'Keep the inn open',relationship:'Acquaintance',status:'Calm',location:'Cinder Quay'});
     const mara=profile('mara','Mara Vey'),edric={...profile('edric','Edric Vale'),role:'Night Watch',pronouns:'he/him'};
@@ -123,6 +130,6 @@ module.exports = async function npcSuite(browser, base, root) {
     await fs.mkdir(path.join(root,'test-results'),{recursive:true});await p.setViewportSize({width:850,height:1300});
     await p.locator('.mes').first().screenshot({path:path.join(root,'test-results/npc-scene-desktop.png')});
     await p.setViewportSize({width:390,height:1000});await p.locator('.mes').first().screenshot({path:path.join(root,'test-results/npc-scene-mobile.png')});
-    assert.deepEqual(errors,[]);await context.close();
+    assert.deepEqual(errors,[]);assert.deepEqual(staleRequests,[]);await context.close();
     console.log('PASS: NPC speaker grouping, complete names, host quote/emphasis colors, optimized local portraits, scope promotion/demotion, reload, edit mode, toggles and responsive chat.');
 };

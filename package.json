@@ -1,9 +1,11 @@
 {
   "name": "vesperchain-extension",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "node scripts/build.mjs",
+    "precheck": "npm run build",
     "check": "node --check src/index.js && node --check src/app.js && node --check src/config.js && node --check src/catalog.js && node --check src/icons.js && node --check src/campaign.js && node --check src/tracking.js && node --check src/npcs.js && node --check src/npc-model.js && node --check src/portraits.js && node --check src/portrait-editor.js",
     "test": "node --test tests/*.test.js",
     "test:browser": "node tests/browser.cjs"

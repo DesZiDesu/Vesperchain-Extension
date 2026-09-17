@@ -1,6 +1,6 @@
 # Vesperchain — The Black Ledger
 
-**v0.2.1 · Chat mechanics and NPC presentation**
+**v0.2.2 · Chat mechanics and NPC presentation**
 
 A dark-fantasy interface with layered tab decks, original SVG marks, optional animated atmosphere, and persistent interface preferences. English and Thai interface labels are included.
 
@@ -15,6 +15,14 @@ https://github.com/DesZiDesu/Vesperchain-Extension
 Reload SillyTavern. Open **Extensions → Vesperchain** to configure it. No runtime npm install, API key, or build step is required. Requires a modern browser with native dialog/Pointer Events support and SillyTavern's public `SillyTavern.getContext()` API, including `extensionSettings` and `saveSettingsDebounced`.
 
 This version includes chat mechanics, scoped NPC profiles, local portraits, and the selected Scene / Narrative / Dialogue presentation.
+
+### Updating without clearing Safari data
+
+Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.2.2** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
+
+Open **Extensions → Vesperchain → General → NPC Management · Profiles & portraits**, or **Black Ledger → Avarenth → NPC Management**. Select a character/chat and enable tracking if prompted. The list starts empty until a complete NPC profile is recorded; select an NPC to manage its scope and portrait. This is management of recorded NPCs, not a separate manual NPC-creation form.
+
+For maintainers: bump `src/version.js`, package and manifest versions, point both manifest assets at the new `dist/<version>/` directory, run `npm run build`, and commit the generated files. Never reuse a published release directory for changed code. Integration tests load the shipped release files, and tests verify they match source.
 
 ## Entry points
 
