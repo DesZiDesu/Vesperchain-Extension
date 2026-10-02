@@ -1,6 +1,6 @@
 # Vesperchain — The Black Ledger
 
-**v0.3.1 · Fullscreen ledger and tracking recovery**
+**v0.4.0 · NPC authoring, species index, purchase negotiations and money receipts**
 
 A dark-fantasy interface with a compact ledger workspace, original SVG marks, optional animated atmosphere, and persistent interface preferences. English and Thai interface labels are included.
 
@@ -18,9 +18,9 @@ This version includes chat mechanics, scoped NPC profiles, local portraits, and 
 
 ### Updating without clearing Safari data
 
-Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.3.1** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
+Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.4.0** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
 
-Open **Extensions → Vesperchain → General → NPC Management · Profiles & portraits**, or **Black Ledger → Avarenth → NPC Management**. Select a character/chat and enable tracking if prompted. The list starts empty until a complete NPC profile is recorded; select an NPC to manage its scope and portrait. This is management of recorded NPCs, not a separate manual NPC-creation form.
+Open **Extensions → Vesperchain → General → NPC Management · Profiles & portraits**, or **Black Ledger → World → People**. Select a character/chat and enable tracking if prompted. Use **Create NPC** to author a profile before or during play, or select a recorded NPC to edit its identity, scope and portrait. Blank facts are saved as undisclosed (null).
 
 For maintainers: bump `src/version.js`, package and manifest versions, point both manifest assets at the new `dist/<version>/` directory, run `npm run build`, and commit the generated files. Never reuse a published release directory for changed code. Integration tests load the shipped release files, and tests verify they match source.
 
@@ -37,7 +37,7 @@ The two launchers can be enabled independently. Drag the floating button with a 
 
 ## Appearance and effects
 
-All options are in the native Extensions drawer, under **General**, **Appearance**, and **Effects**. Changes save automatically through SillyTavern and apply immediately.
+All options are in the native Extensions drawer, under **General**, **Appearance**, and **Effects**. The drawer inherits SillyTavern’s font, theme colors and borders, with grouped settings. The ledger gear opens these same controls in a dedicated settings dialog above the current ledger page; closing settings returns to that page, without depending on a host drawer-toggle selector. Changes save automatically through SillyTavern and apply immediately.
 
 - Obsidian / antique gold and Moonstone / silver palettes.
 - English / Thai labels; comfortable or compact spacing; 14–20px base text size.
@@ -50,14 +50,14 @@ Ambient work pauses when the document is hidden or the interface is closed. The 
 
 ## Story ledger
 
-The ledger fills the available browser viewport, with no outer modal margin. It adapts to visual viewport changes and safe-area insets; it does not invoke the browser Fullscreen API or hide browser chrome. The desktop workspace uses a compact sidebar. On phones, the same sections appear in a horizontally scrollable navigation bar, with a separate scrolling reading area and reachable close/settings controls. There are ten pages instead of sixteen:
+The ledger fills the available browser viewport, with no outer modal margin. It adapts to visual viewport changes and safe-area insets; it does not invoke the browser Fullscreen API or hide browser chrome. The desktop workspace uses a compact sidebar. On phones, the same sections appear in a horizontally scrollable navigation bar, with a separate scrolling reading area and reachable close/settings controls. There are twelve pages, including species and purchase views:
 
 | Section | Pages |
 | --- | --- |
 | Overview | Overview, Character |
 | Collection | Collection, Research & training |
-| Commerce | Contracts, Ledger & business |
-| World | People, World journal |
+| Commerce | Contracts, Purchase offers, Ledger & business |
+| World | People, Species index, World journal |
 | Settings & saves | Checkpoints, Settings |
 
 Overview shows the current scene, known resources, creature/people/project counts and up to three open contracts. Context links lead to the relevant page; **Continue in chat** closes the ledger without starting generation. Unknown resources are not replaced with starter values.
@@ -122,7 +122,7 @@ npm run test:browser
 
 For an existing Chromium executable, set `VESPERCHAIN_CHROMIUM` for the browser test. Runtime has zero npm dependencies; Playwright is development-only.
 
-Browser tests use a simulated SillyTavern host and cover all 10 routes at desktop, 390px, and 320px widths, deck memory, keyboard tabs, launchers, drag versus click, persistence, drawer handoff, escaped character names, font opt-out, reduced motion, and idempotent/remounted host elements. This is not a claim of a live SillyTavern or physical iPhone test. See [acceptance checks](docs/ACCEPTANCE.md).
+Browser tests use a simulated SillyTavern host and cover all 12 routes at desktop, 390px, and 320px widths, deck memory, keyboard tabs, launchers, drag versus click, persistence, drawer handoff, escaped character names, font opt-out, reduced motion, and idempotent/remounted host elements. This is not a claim of a live SillyTavern or physical iPhone test. See [acceptance checks](docs/ACCEPTANCE.md).
 
 ## เริ่มใช้งาน
 
@@ -132,7 +132,7 @@ Browser tests use a simulated SillyTavern host and cover all 10 routes at deskto
 
 The selected **Open Folio** narrative frame is installed in the chat renderer. Adjacent narration is grouped, remains outside dialogue, and never resets the current speaker. Plain narration-only replies also receive a frame; unlabelled speech and malformed markers fall back to native rendering rather than guessing a speaker. Disable the frame in Extensions → Vesperchain → General while keeping NPC dialogue; disabling NPC rendering restores native text entirely.
 
-Scene, NPC and narrative text follow SillyTavern's `--mainFontFamily`, `--mainFontSize`, body/quote/emphasis colors and inherited line height. Heading and metadata sizes are proportional. Ornate fonts and extension text-size controls remain for the drawer/decks, not these chat components. Decorative spacing stays extension-controlled. This is not a claim of compatibility with every custom CSS selector or Markdown feature: the safe NPC renderer supports text, paragraphs, quotations and emphasis, not arbitrary HTML or embedded media. Parchment contracts retain their own contrasting paper palette.
+Scene, NPC and narrative text follow SillyTavern's `--mainFontFamily`, `--mainFontSize`, body/quote/emphasis colors and inherited line height. Heading and metadata sizes are proportional. Ornate fonts and extension text-size controls remain for the ledger, not these chat components. Decorative spacing stays extension-controlled. This is not a claim of compatibility with every custom CSS selector or Markdown feature: the safe NPC renderer supports text, paragraphs, quotations and emphasis, not arbitrary HTML or embedded media. Parchment contracts retain their own contrasting paper palette.
 
 Portrait editing: select an image, drag directly in the square preview, and pinch with two fingers on mobile. Desktop also offers a zoom slider, mouse drag/wheel and keyboard arrows/+/- on the preview. Reset restores the centered crop; Cancel keeps the existing image. Only Use image saves the final 384px crop. The source image is temporary and is not retained after the editor closes.
 
@@ -142,3 +142,28 @@ Portrait editing: select an image, drag directly in the square preview, and pinc
 A rejected tracking record preserves the last confirmed state. It no longer prevents well-formed speaker passages from being shown as readable text: valid `[[vc:…]]` / `[[/vc]]` delimiters are removed in the display, without publishing unvalidated profiles or inventing a speaker. Native editing and disabling NPC presentation still expose the original transcript.
 
 The scene strip offers **Review record** when a record is rejected. The review displays the field path, allowed fields and a read-only copy of the original JSON. Correct the record through SillyTavern’s native message editor; normal reconciliation revalidates the selected history. Unknown fields are still rejected atomically. The generation prompt now explicitly separates the read-only state snapshot from the permitted output fields.
+
+
+## NPC authoring and species index (v0.4.0)
+
+**World → People → Create NPC** works before the first AI reply as well as during play. Enter a personal name; other identity fields may be left blank. Edit, duplicate, search by name/role, filter by species, or export/import a complete profile as JSON. Import opens a reviewed creation form with a new ID; it never silently replaces an existing person. Scope and portraits remain in the profile panel. Character sharing copies identities into future chats; possession and progress do not carry over automatically.
+
+**World → Species index** automatically collects species names from NPC profiles and the optional creature species field. Search the index, add a species, or edit its description, traits, habitat and notes. **Record lineage** selects two indexed parent species and an indexed outcome (or an unknown outcome for a theory). Records explicitly distinguish **Observed** from **Theory**. AI can record discoveries and outcomes from confirmed story events using the protocol. The index does not guarantee what another cross will produce, run a genetics simulation, or create offspring by itself. Actual new individuals must be established separately in the story and recorded as creatures/NPCs.
+
+Player-created profiles, encyclopedia details and lineage records use the chat’s deterministic action log. Edits made before any AI response replay from the baseline; later edits are anchored to the current response. If that source is edited/swiped/deleted, dependent decisions are suspended for review rather than moved to a different history.
+
+## Purchase offers and negotiation (v0.4.0)
+
+When a known NPC requests an owned item, creature or individual, the AI records a **purchase offer** with buyer, target, quantity, terms and **total** silver price. A compact card appears at that message in Main Chat; **Commerce → Purchase offers** also lists open negotiations and folds completed ones away.
+
+- **Counteroffer** records your total asking price and waits for a response. If the Main Chat composer is empty, it prepares a draft; it preserves an existing draft. Send your normal Main Chat message to continue the negotiation. There is no automatic extra AI request.
+- The NPC may accept that exact price, propose another price, or decline. Each response must match the pending negotiation round. You can negotiate again, confirm a sale, or choose **Do not sell**.
+- NPC acceptance is still only a price agreement. **Confirm sale & payment** transfers stock/possession and credits silver atomically, once. Unknown balance, insufficient stock, changed terms or a stale review prevent settlement. Historical cards show the latest negotiation state.
+- Inventory uses quantity. A creature or NPC must have explicit possession, separate from simply being encountered; individual sales use quantity 1. Mark a creature’s possession in Collection, or use the NPC editor checkbox. Fictional owned people can be represented with the same mechanism. A transfer retains the individual’s identity and records the new holder; it does not delete the profile.
+- Edits/swipes/deletions replay payouts and possessions together. UI sale and contract payouts are authoritative, and the protocol tells the AI not to pay them again.
+
+## Main Chat money notices (v0.4.0)
+
+A small receipt shows **Money received / Money spent**, signed silver amount and reason at the response or decision that changed funds. Confirmed transactions, contract handovers and sales generate receipts. First establishing an unknown balance does not count as income. Later absolute-balance corrections show as balance adjustments; pending offers and negotiation do not create receipts. Reconciliation avoids repeated receipts for duplicate records. General settings has independent switches for purchase cards and money notices.
+
+Existing v1 campaigns and checkpoints remain readable; absent world-index fields are added in memory, without clearing site data. Updated checkpoints retain taxonomy, lineage and pending purchase negotiations. Older extension releases cannot understand the new optional domains in an updated checkpoint; use v0.4.0 to continue those exports.

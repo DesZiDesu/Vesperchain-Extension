@@ -56,3 +56,8 @@ Automated: 24 pure tests plus the browser integration cover historical replay, a
 - Add a well-formed NPC passage with an unknown JSON field. It should show readable speech without markers or an invented header, and retain the last confirmed scene/resources/profiles.
 - Open Review record, copy the JSON, verify the reported field path, then correct the native message. Scene tracking and validated NPC presentation should recover. Editing, toggles and streaming must still expose/retain the correct original text.
 - Automated coverage verifies unknown top-level/nested fields reject atomically, a rejected first NPC reply stays readable, the review shows its original JSON, native correction restores state and fullscreen bounds/controls follow portrait, landscape and short viewport changes.
+
+
+## v0.4.0 additions
+
+Unit coverage includes manual NPC authoring before generation, stale edit protection, species identity reuse, observed/theory lineage, sale ownership and stock, repeated negotiation rounds, explicit settlement, duplicate/rejected receipts, source edits and old/new checkpoint round trips. Browser coverage uses the shipped release to create/edit/search NPCs, record lineage, negotiate twice, accept/decline offers, verify receipts and reload, exercise 320px layouts, and open the host-themed settings gear without a host drawer toggle. This is simulated-host coverage, not a physical-device or live-installation claim.
