@@ -24,7 +24,7 @@ Automated tests exercise a browser-host fixture. Before treating this as a live-
 - Toggle scene strips, parchment cards, prompt injection, per-character tracking and master enable. Raw message content must remain intact.
 - Simulate a failed host save; the visible error must persist until retry succeeds.
 
-Automated: 23 pure tests plus the browser integration cover historical replay, atomic validation, duplicate prevention, signature/handover, reload, independent continuation, regeneration, opt-in and toggles. The existing browser suite covers all 10 routes at three widths and launcher/settings behavior. Live-host/model compliance and physical devices still require the checks above. NPC browser integration additionally checks speaker runs, live host colors, portrait upload/rejection, scope promotion/demotion, reload, native editing, toggles and 1000/390/320px chat layouts.
+Automated: 24 pure tests plus the browser integration cover historical replay, atomic validation, duplicate prevention, signature/handover, reload, independent continuation, regeneration, opt-in and toggles. The existing browser suite covers all 10 routes at three widths and launcher/settings behavior. Live-host/model compliance and physical devices still require the checks above. NPC browser integration additionally checks speaker runs, live host colors, portrait upload/rejection, scope promotion/demotion, reload, native editing, toggles and 1000/390/320px chat layouts.
 
 
 ## NPC live-host checks
@@ -47,3 +47,12 @@ Automated: 23 pure tests plus the browser integration cover historical replay, a
 - Open an entity's Details, inspect past contracts, use the Overview contract links and Continue in chat. The latter closes the modal without requesting a generation.
 - Inspect both palettes, compact/comfortable density, Thai/English and 20px text. Verify no horizontal content overflow and that keyboard selection follows the visible section.
 - New browser integration additionally checks populated views at three widths, escaped entity names, retention of every entity category, unknown resources and navigation without campaign writes. Screenshots from the fixture are stored in test-results/ledger-desktop.png and ledger-mobile.png; they are not live-host results.
+
+
+## Fullscreen and rejected-record acceptance (v0.3.1)
+
+- Open the ledger at desktop/phone widths and in landscape. It should fill the browser viewport while the header close/settings buttons and footer remain reachable.
+- On physical mobile browsers, open the keyboard, rotate and pinch-zoom; verify visual viewport updates, safe-area spacing and independent page scrolling. Fullscreen is a webpage layout, not a request to hide browser chrome.
+- Add a well-formed NPC passage with an unknown JSON field. It should show readable speech without markers or an invented header, and retain the last confirmed scene/resources/profiles.
+- Open Review record, copy the JSON, verify the reported field path, then correct the native message. Scene tracking and validated NPC presentation should recover. Editing, toggles and streaming must still expose/retain the correct original text.
+- Automated coverage verifies unknown top-level/nested fields reject atomically, a rejected first NPC reply stays readable, the review shows its original JSON, native correction restores state and fullscreen bounds/controls follow portrait, landscape and short viewport changes.

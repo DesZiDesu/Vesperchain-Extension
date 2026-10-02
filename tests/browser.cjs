@@ -111,6 +111,7 @@ const server = createServer(async (req, res) => {
         await require('./tracking-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
         await require('./npcs-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
         await require('./ledger-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
+        await require('./recovery-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`);
         console.log('PASS: 10 pages at 3 widths, keyboard tabs, deck memory, drag/click, persistence, launcher modes, drawer handoff, fonts, reduced motion, escaping, host remount, no chat writes.');
     } finally { await browser.close(); server.close(); }
 })().catch(error => { console.error(error); server.close(); process.exitCode = 1; });
