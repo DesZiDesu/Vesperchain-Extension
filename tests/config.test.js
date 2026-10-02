@@ -30,8 +30,8 @@ test('drag placement stays inside resized and offset mobile viewports, round tri
         }
     }
 });
-test('all sixteen pages have a unique owning deck and no unregistered routes', () => {
-    const pages = DECKS.flatMap(d => d.pages); assert.equal(pages.length, 16);
+test('all ten pages have a unique owning deck and no unregistered routes', () => {
+    const pages = DECKS.flatMap(d => d.pages); assert.equal(pages.length, 10);
     assert.equal(new Set(pages).size, pages.length); assert.deepEqual([...pages].sort(), Object.keys(PAGES).sort());
 });
 test('normalization returns independent positions, not a mutable shared default', () => {

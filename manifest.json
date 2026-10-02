@@ -3,10 +3,10 @@
   "loading_order": 40,
   "requires": [],
   "optional": [],
-  "js": "dist/0.2.2/index.js",
-  "css": "dist/0.2.2/vesperchain.css",
+  "js": "dist/0.3.0/index.js",
+  "css": "dist/0.3.0/vesperchain.css",
   "author": "DesZiDesu",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "homePage": "https://github.com/DesZiDesu/Vesperchain-Extension",
   "auto_update": true
 }

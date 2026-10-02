@@ -33,7 +33,7 @@ const server = createServer(async (req, res) => {
         assert.equal(await p.locator('#vesperchain-launcher').count(), 0);
         await p.locator('#vesperchain-wand').click();
         assert.equal(await p.locator('#vesperchain-dialog').evaluate(n => n.open), true);
-        const routes = { chronicle: ['home', 'scene', 'character'], domain: ['shop', 'stock', 'research'], commerce: ['ledger', 'contracts', 'auction', 'branches'], world: ['travel', 'time', 'npc', 'codex'], system: ['recovery', 'settings'] };
+        const routes = { chronicle: ['home', 'character'], domain: ['stock', 'research'], commerce: ['contracts', 'ledger'], world: ['npc', 'codex'], system: ['recovery', 'settings'] };
         for (const width of [1180, 390, 320]) {
             await p.setViewportSize({ width, height: 1000 });
             for (const [deck, pages] of Object.entries(routes)) {
@@ -48,9 +48,9 @@ const server = createServer(async (req, res) => {
         }
         // Deck memory and keyboard navigation.
         await p.locator('[data-deck=commerce]').click();
-        assert.equal(await p.locator('.vc-tabs [aria-selected=true]').getAttribute('data-page'), 'branches');
-        await p.locator('.vc-tabs [aria-selected=true]').focus(); await p.keyboard.press('Home');
         assert.equal(await p.locator('.vc-tabs [aria-selected=true]').getAttribute('data-page'), 'ledger');
+        await p.locator('.vc-tabs [aria-selected=true]').focus(); await p.keyboard.press('Home');
+        assert.equal(await p.locator('.vc-tabs [aria-selected=true]').getAttribute('data-page'), 'contracts');
         // Host text must be escaped and change without a game-state write.
         await p.evaluate(() => window.changeChat('<img src=x onerror="throw 1">'));
         assert.equal(await p.locator('.vc-context img').count(), 0);
@@ -110,6 +110,7 @@ const server = createServer(async (req, res) => {
         assert.deepEqual(errors, []);
         await require('./tracking-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
         await require('./npcs-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
-        console.log('PASS: 16 pages at 3 widths, keyboard tabs, deck memory, drag/click, persistence, launcher modes, drawer handoff, fonts, reduced motion, escaping, host remount, no chat writes.');
+        await require('./ledger-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
+        console.log('PASS: 10 pages at 3 widths, keyboard tabs, deck memory, drag/click, persistence, launcher modes, drawer handoff, fonts, reduced motion, escaping, host remount, no chat writes.');
     } finally { await browser.close(); server.close(); }
 })().catch(error => { console.error(error); server.close(); process.exitCode = 1; });
