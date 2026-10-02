@@ -33,7 +33,7 @@ const server = createServer(async (req, res) => {
         assert.equal(await p.locator('#vesperchain-launcher').count(), 0);
         await p.locator('#vesperchain-wand').click();
         assert.equal(await p.locator('#vesperchain-dialog').evaluate(n => n.open), true);
-        const routes = { chronicle: ['home', 'character'], domain: ['stock', 'research'], commerce: ['contracts', 'ledger'], world: ['npc', 'codex'], system: ['recovery', 'settings'] };
+        const routes = { chronicle: ['home', 'character'], domain: ['stock', 'research'], commerce: ['contracts', 'purchases', 'ledger'], world: ['npc', 'species', 'codex'], system: ['recovery', 'settings'] };
         for (const width of [1180, 390, 320]) {
             await p.setViewportSize({ width, height: 1000 });
             for (const [deck, pages] of Object.entries(routes)) {
@@ -112,6 +112,7 @@ const server = createServer(async (req, res) => {
         await require('./npcs-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
         await require('./ledger-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
         await require('./recovery-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`);
-        console.log('PASS: 10 pages at 3 widths, keyboard tabs, deck memory, drag/click, persistence, launcher modes, drawer handoff, fonts, reduced motion, escaping, host remount, no chat writes.');
+        await require('./world-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
+        console.log('PASS: 12 pages at 3 widths, keyboard tabs, deck memory, drag/click, persistence, launcher modes, drawer handoff, fonts, reduced motion, escaping, host remount, no chat writes.');
     } finally { await browser.close(); server.close(); }
 })().catch(error => { console.error(error); server.close(); process.exitCode = 1; });

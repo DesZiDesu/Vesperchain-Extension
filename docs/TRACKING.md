@@ -18,11 +18,11 @@ All values in this example are illustrative, not automatic starting values. The 
 - `version: 1`, a unique stable `eventId`, and exact `baseRevision` are mandatory. One accepted record advances revision once. User decisions also advance it.
 - `scene`: region, city, place, room, day, month, year, period, weather. Unknowns are null. Day/year are positive integers; month/period are text.
 - `resources`: silver, hp, maxHp, stamina, maxStamina, mana, maxMana, level, xp. These are absolute nonnegative integer values or null, with positive level and current values not exceeding known maxima.
-- `entities`: inventory, creatures, shops, projects, npcs, factions, branches, routes, notes. Each group is an array of updates with stable `id`, `name`, optional `status`, `location`, `details`, `quantity`. Inventory requires quantity. `{id,remove:true}` removes a record.
+- `entities`: inventory, creatures, shops, projects, npcs, factions, branches, routes, notes. Each group is an array of updates with stable `id`, `name`, optional `status`, `location`, `details`, `quantity`, `owned`, `species`. `owned` is a boolean only for creatures/NPCs; `species` is a species-name string only for creatures. NPC identity remains in `npcProfiles`; generic NPC updates may explicitly change possession with `{id,name,owned}`. Inventory requires quantity. `{id,remove:true}` removes a record.
 - `npcProfiles`: arrays of complete identity objects `{id,name,role,age,pronouns,species,appearance,personality,background,goals,relationship,status,location}`. All keys required. Values are nonempty plain strings or explicit null for undisclosed facts (ID/name cannot be null). Name must be a personal name, never a job; common job-only labels and name equal to role are rejected. Do not expose undisclosed identity/secrets. Store full profiles here, not inside generic entity updates.
 - `offers`: immutable agreements with `id`, `title`, `issuer`, `objective`, `terms`, `deadlineDay` (integer or null), `reward:{silver,xp}`, `deliver:[{itemId,quantity}]`. Decisions belong to the user. New terms require a new ID.
 - `contractUpdates:[{id,ready:true,evidence}]`: story evidence makes a signed contract ready for reviewed handover. The UI, not this record, delivers items and awards the agreed silver/XP.
-- `transactions:[{id,reason,silverDelta,items:[{itemId,delta}]}]`: atomic changes to existing inventory and known money. Do not mix with a silver absolute value or inventory upserts in the same record. IDs beginning `contract-` are reserved.
+- `transactions:[{id,reason,silverDelta,items:[{itemId,delta}]}]`: atomic changes to existing inventory and known money. Do not mix with a silver absolute value or inventory upserts in the same record. IDs beginning `contract-` and `sale-` are reserved for UI payouts.
 
 The prompt carries up to 20 recent entries per entity category, all active signed/ready contracts plus recent agreements, and reviewed continuity notes. The stored state remains complete within the documented capacity; this context subset is explicitly identified as incomplete. Unknown IDs or ambiguous facts must be clarified in Main Chat.
 
@@ -66,3 +66,30 @@ Unknown fields report their schema path and permitted keys, for example `record.
 The scene strip’s Review record action exposes the rejected JSON as escaped, read-only text. Users may correct the original message through native editing. No automatic record repair, dropped-field acceptance or extra generation occurs. The known state remains unchanged until the full record validates.
 
 For a well-formed speaker passage, presentation can strip delimiters and show the prose even if tracking failed or a profile is absent. It creates no NPC identity or named dialogue header from rejected data. Malformed/nested markers still use native fallback. Raw messages remain unchanged and are restored for editing or when presentation is disabled.
+
+
+## Species and lineage
+
+- `speciesProfiles:[{id,name,description,traits,habitat,notes}]`: all fields required, unknown details use empty strings. IDs are stable. Reuse an existing species ID for the same case-insensitive name. Definitions apply before entity/NPC discovery, so a new species and its individuals can share a record. NPC/creature species names are also indexed automatically.
+- `breedingRecords:[{id,parentA,parentB,result,status,notes}]`: parent/result values are indexed species IDs. `status` is `observed` or `theory`; an observed result must be known, while a theory may use `result:null`. All fields required. Event contents are immutable; a different experiment/outcome needs a new ID. Index records never change possession counts or create offspring on their own.
+- Limits: 500 indexed species and 2,000 lineage events per chat. Names differing only in case/normalized Unicode reuse the same identity. Recent prompt context includes up to 100 species and 50 lineage records; omitted entries do not mean absence.
+
+## Purchases
+
+`purchaseOffers:[{id,buyerId,kind,entityId,quantity,price,terms}]` uses a complete NPC buyer and an existing target. `kind` is `inventory`, `creatures` or `npcs`. Price is a positive integer **total** in silver. Inventory needs enough stock. Individuals require `owned:true`, quantity 1, and a buyer distinct from the target. Offers do not pay or transfer anything. IDs/target/terms are immutable.
+
+A user counteroffer changes a purchase from `offered` to `awaiting`, increments `round`, and stores `requestedPrice`. The next ordinary AI response may contain:
+
+```json
+{"purchaseUpdates":[{"id":"silk-bid","round":1,"decision":"accept","price":170,"reason":"The buyer agrees to that total."}]}
+```
+
+This is an illustrative fragment of a full record, not a standalone payload. `decision` is `accept`, `counter` or `decline`. It must match the exact pending round. Acceptance must equal requestedPrice; another buyer price is a counter. Acceptance/counter returns the deal to `offered`, while decline closes it. Only a user `purchase-sell` decision can settle. Do not duplicate UI proceeds or consumed stock in resources, entities or transactions. User rejection is also authoritative. Active negotiations and recent closed deals are included in the normal prompt.
+
+A confirmed individual sale retains identity and changes possession to false, recording the buyer as holder/location. Inventory subtracts the sold quantity. The payout enters the transaction log as `sale-<decision-id>`. Edits or deleted anchors suspend sale and funds together. Limits: 1,000 purchase offers and 1,000 history steps per negotiation.
+
+## Manual decisions and financial presentation
+
+NPC authoring, species edits, lineage entries and possession controls also use local decisions. They may apply at the `baseline` before the first AI response; otherwise they are anchored to the last selected AI response. Review forms reject a changed chat/revision, and creation/editing requires enabled tracking and completed generation. Malformed imported profiles require correction in a reviewed form.
+
+Each historical frame carries new nonzero transactions for financial notices. Establishing a first known balance creates no notice. A subsequent absolute silver change, after subtracting separately recorded decision payouts, is a balance-adjustment notice. Duplicate records do not repeat transactions; rejected records cannot produce a notice from unconfirmed changes. Display switches do not alter accounting.

@@ -68,7 +68,7 @@ test('unknown fields name their schema path and retain the whole confirmed state
         [packet('bad-top', 1, { scope: 'chat', scene: { city: 'Wrong' } }), 'record.scope'],
         [packet('bad-scene', 1, { scene: { city: 'Wrong', time: 'Night' } }), 'record.scene.time'],
         [packet('bad-resource', 1, { resources: { silver: 1, gold: 99 } }), 'record.resources.gold'],
-        [packet('bad-entity', 1, { entities: { creatures: [{ id: 'beast', name: 'Beast', species: 'Slime' }] } }), 'record.entities.creatures[beast].species'],
+        [packet('bad-entity', 1, { entities: { creatures: [{ id: 'beast', name: 'Beast', fertility: 'unknown' }] } }), 'record.entities.creatures[beast].fertility'],
     ];
     const confirmed = replay(campaign(), [initial()]).state;
     for (const [record, path] of invalid) {
