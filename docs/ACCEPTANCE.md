@@ -8,7 +8,7 @@ Automated tests exercise a browser-host fixture. Before treating this as a live-
 - Turn both launchers off and open from Extensions. Disable the extension and verify no launcher remains.
 - Switch both themes, fonts, language, density, and 14–20px text. Verify font fallback when Google Fonts is blocked.
 - Toggle every effect independently. Set intensity to zero, reduce motion in the device settings, and background the browser. No ambient animation should continue when reduced or hidden.
-- Visit all five decks / sixteen pages, test tab keyboard navigation, and use the header settings shortcut. No text should escape the modal at 320px width.
+- Visit all five sections / ten pages, test tab keyboard navigation, and use the header settings shortcut. No text should escape the modal at 320px width.
 - Switch characters with the interface open. The header should update; each character must keep its own campaign state and the raw transcript must remain intact.
 - Confirm preferences survive a SillyTavern restart and updates. Campaign state must remain unchanged.
 
@@ -24,7 +24,7 @@ Automated tests exercise a browser-host fixture. Before treating this as a live-
 - Toggle scene strips, parchment cards, prompt injection, per-character tracking and master enable. Raw message content must remain intact.
 - Simulate a failed host save; the visible error must persist until retry succeeds.
 
-Automated: 22 pure tests plus the browser integration cover historical replay, atomic validation, duplicate prevention, signature/handover, reload, independent continuation, regeneration, opt-in and toggles. The existing browser suite covers all 16 routes at three widths and launcher/settings behavior. Live-host/model compliance and physical devices still require the checks above. NPC browser integration additionally checks speaker runs, live host colors, portrait upload/rejection, scope promotion/demotion, reload, native editing, toggles and 1000/390/320px chat layouts.
+Automated: 23 pure tests plus the browser integration cover historical replay, atomic validation, duplicate prevention, signature/handover, reload, independent continuation, regeneration, opt-in and toggles. The existing browser suite covers all 10 routes at three widths and launcher/settings behavior. Live-host/model compliance and physical devices still require the checks above. NPC browser integration additionally checks speaker runs, live host colors, portrait upload/rejection, scope promotion/demotion, reload, native editing, toggles and 1000/390/320px chat layouts.
 
 
 ## NPC live-host checks
@@ -37,3 +37,13 @@ Automated: 22 pure tests plus the browser integration cover historical replay, a
 - Verify local portraits remain excluded from checkpoint exports and prompts. A new device needs a new portrait upload.
 
 - Portrait crop editor: drag and wheel/slider on desktop; direct one-finger drag and two-finger pinch on mobile with no slider. Verify reset, cancel, close and chat switch preserve the old image until Use image. Browser coverage includes mouse drag, CDP touch pinch/pan, saved 384px output and cancel/close preservation. Check gestures on physical iOS/Android devices too.
+
+
+## Compact ledger acceptance (v0.3.0)
+
+- Open the ledger with no selected chat, with tracking off, and in a fresh tracked chat. One clear next action should appear; unknown resources must not show invented starter values.
+- Populate all entity categories. Check creatures/inventory/shops in Collection, projects in Research, branches in Ledger, and notes/factions/routes in World journal. NPCs remain available in People. Opening and navigating these views must not write campaign state.
+- On desktop, the sidebar and close/settings controls remain visible while the reading area scrolls. At 390px and 320px, scroll the horizontal section bar to every section, and scroll page content independently.
+- Open an entity's Details, inspect past contracts, use the Overview contract links and Continue in chat. The latter closes the modal without requesting a generation.
+- Inspect both palettes, compact/comfortable density, Thai/English and 20px text. Verify no horizontal content overflow and that keyboard selection follows the visible section.
+- New browser integration additionally checks populated views at three widths, escaped entity names, retention of every entity category, unknown resources and navigation without campaign writes. Screenshots from the fixture are stored in test-results/ledger-desktop.png and ledger-mobile.png; they are not live-host results.

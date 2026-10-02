@@ -1,8 +1,8 @@
 # Vesperchain — The Black Ledger
 
-**v0.2.2 · Chat mechanics and NPC presentation**
+**v0.3.0 · A compact story ledger**
 
-A dark-fantasy interface with layered tab decks, original SVG marks, optional animated atmosphere, and persistent interface preferences. English and Thai interface labels are included.
+A dark-fantasy interface with a compact ledger workspace, original SVG marks, optional animated atmosphere, and persistent interface preferences. English and Thai interface labels are included.
 
 ## Installation
 
@@ -18,7 +18,7 @@ This version includes chat mechanics, scoped NPC profiles, local portraits, and 
 
 ### Updating without clearing Safari data
 
-Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.2.2** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
+Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.3.0** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
 
 Open **Extensions → Vesperchain → General → NPC Management · Profiles & portraits**, or **Black Ledger → Avarenth → NPC Management**. Select a character/chat and enable tracking if prompted. The list starts empty until a complete NPC profile is recorded; select an NPC to manage its scope and portrait. This is management of recorded NPCs, not a separate manual NPC-creation form.
 
@@ -48,17 +48,25 @@ All options are in the native Extensions drawer, under **General**, **Appearance
 
 Ambient work pauses when the document is hidden or the interface is closed. The implementation uses CSS animations and bounded Web Animations; it has no continuous JavaScript rendering loop or automatic AI calls.
 
-## Tab decks
+## Story ledger
 
-| Deck | Pages |
+The desktop workspace uses a compact sidebar. On phones, the same sections appear in a horizontally scrollable navigation bar, with a separate scrolling reading area and reachable close/settings controls. There are ten pages instead of sixteen:
+
+| Section | Pages |
 | --- | --- |
-| Chronicle | Overview, Scene, Character |
-| Domain | Shop, Collection, Research |
-| Commerce | Ledger, Contracts, Auction, Branches |
-| Avarenth | Travel, Time, NPCs, Codex |
-| Sanctum | Recovery, Settings |
+| Overview | Overview, Character |
+| Collection | Collection, Research & training |
+| Commerce | Contracts, Ledger & business |
+| World | People, World journal |
+| Settings & saves | Checkpoints, Settings |
 
-Each deck remembers the last page visited during the session. Native buttons support keyboard tab navigation, arrow keys, Home, and End. The modal has a persistent close control and Escape handling. The settings shortcut returns to the Extensions drawer.
+Overview shows the current scene, known resources, creature/people/project counts and up to three open contracts. Context links lead to the relevant page; **Continue in chat** closes the ledger without starting generation. Unknown resources are not replaced with starter values.
+
+Scene, travel and time are combined into the scene summary. Shops/facilities share Collection with creatures and inventory. Branches appear in Ledger; routes, factions and knowledge appear in World journal. Auction notes remain journal notes. All stored entity categories remain accessible; this is a presentation change, not a campaign migration or a new simulation system.
+
+Entity lists show a name, status/location and quantity, with longer details disclosed on demand. Completed/declined contracts are folded under Past contracts. Replay/save diagnostics live in Checkpoints, with a review link elsewhere when there is an issue. Reference-only prices, incubation schedules and lorebook counts are removed from navigation content.
+
+Each section remembers the last page visited during the session. Native buttons support keyboard tab navigation, arrow keys, Home and End. The modal has persistent close/settings controls and Escape handling. Chat scene strips, NPC headers and narrative frames use compact spacing while retaining the selected presentation and host text colors.
 
 ## Chat mechanics
 
@@ -114,13 +122,13 @@ npm run test:browser
 
 For an existing Chromium executable, set `VESPERCHAIN_CHROMIUM` for the browser test. Runtime has zero npm dependencies; Playwright is development-only.
 
-Browser tests use a simulated SillyTavern host and cover all 16 routes at desktop, 390px, and 320px widths, deck memory, keyboard tabs, launchers, drag versus click, persistence, drawer handoff, escaped character names, font opt-out, reduced motion, and idempotent/remounted host elements. This is not a claim of a live SillyTavern or physical iPhone test. See [acceptance checks](docs/ACCEPTANCE.md).
+Browser tests use a simulated SillyTavern host and cover all 10 routes at desktop, 390px, and 320px widths, deck memory, keyboard tabs, launchers, drag versus click, persistence, drawer handoff, escaped character names, font opt-out, reduced motion, and idempotent/remounted host elements. This is not a claim of a live SillyTavern or physical iPhone test. See [acceptance checks](docs/ACCEPTANCE.md).
 
 ## เริ่มใช้งาน
 
 เปิด Extensions → Vesperchain แล้วเลือกว่าจะเปิด UI ผ่าน Wand menu, ปุ่มลอยลากได้ หรือทั้งสองแบบ ปิดทั้งสองปุ่มได้โดยยังเปิด UI จากหน้าตั้งค่าได้ตามปกติ ธีม ฟอนต์ ขนาดตัวอักษร และเอฟเฟกต์ทั้งหมดปรับได้จากแท็บตั้งค่าและบันทึกอัตโนมัติ
 
-เปิดการติดตามสำหรับตัวละครก่อนเล่น ระบบจะเก็บสถานะแยกแชต แสดงฉากเหนือข้อความ AI และวางใบสัญญาใน Main Chat หากต้องการเล่นต่อในแชตใหม่ ให้สร้างจุดบันทึกและตรวจเรื่องย่อก่อนนำเข้า ระบบ Header/Dialogue ใช้แบบ Court Chronicle พร้อมสีข้อความตาม SillyTavern และภาพ NPC ที่ผู้ใช้เลือกเอง งานรุ่นนี้ยังไม่เผยแพร่ไป main
+เปิดการติดตามสำหรับตัวละครก่อนเล่น ระบบจะเก็บสถานะแยกแชต แสดงฉากเหนือข้อความ AI และวางใบสัญญาใน Main Chat หากต้องการเล่นต่อในแชตใหม่ ให้สร้างจุดบันทึกและตรวจเรื่องย่อก่อนนำเข้า ระบบ Header/Dialogue ใช้แบบ Court Chronicle พร้อมสีข้อความตาม SillyTavern และภาพ NPC ที่ผู้ใช้เลือกเอง UI รุ่น 0.3.0 รวมหน้าที่ซ้ำกันและแสดงเฉพาะข้อมูลที่บันทึกจากเรื่องราว
 
 The selected **Open Folio** narrative frame is installed in the chat renderer. Adjacent narration is grouped, remains outside dialogue, and never resets the current speaker. Plain narration-only replies also receive a frame; unlabelled speech and malformed markers fall back to native rendering rather than guessing a speaker. Disable the frame in Extensions → Vesperchain → General while keeping NPC dialogue; disabling NPC rendering restores native text entirely.
 
