@@ -61,3 +61,9 @@ Automated: 24 pure tests plus the browser integration cover historical replay, a
 ## v0.4.0 additions
 
 Unit coverage includes manual NPC authoring before generation, stale edit protection, species identity reuse, observed/theory lineage, sale ownership and stock, repeated negotiation rounds, explicit settlement, duplicate/rejected receipts, source edits and old/new checkpoint round trips. Browser coverage uses the shipped release to create/edit/search NPCs, record lineage, negotiate twice, accept/decline offers, verify receipts and reload, exercise 320px layouts, and open the host-themed settings gear without a host drawer toggle. This is simulated-host coverage, not a physical-device or live-installation claim.
+
+## Mobile toolbar acceptance (v0.4.1)
+
+- At phone widths, Species and NPC search fill their own row. Action labels remain readable in two columns, or one column at 360px and below. Search must not stretch to match an action's height.
+- Check empty and populated lists, Thai/English labels, 16/20px text, comfortable/compact spacing, and portrait/landscape. Search, authoring and lineage controls must remain functional.
+- Automated browser coverage measures control widths, heights and positions at 320, 390, 430, 600, 844 and 1180px. It catches the previously missed vertical-label failure, as well as horizontal overflow. Repeat on physical mobile browsers with the live host's fonts and theme.

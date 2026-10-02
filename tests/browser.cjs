@@ -17,6 +17,10 @@ const server = createServer(async (req, res) => {
     const browser = await chromium.launch({ headless: true, ...(process.env.VESPERCHAIN_CHROMIUM ? { executablePath: process.env.VESPERCHAIN_CHROMIUM } : {}), args: ['--no-sandbox'] });
     const errors = [];
     try {
+        if (process.env.VESPERCHAIN_TOOLBAR_ONLY) {
+            await require('./toolbar-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
+            return;
+        }
         if (process.env.VESPERCHAIN_NPC_ONLY) {
             await require('./npcs-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
             return;
@@ -113,6 +117,7 @@ const server = createServer(async (req, res) => {
         await require('./ledger-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
         await require('./recovery-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`);
         await require('./world-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
+        await require('./toolbar-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
         console.log('PASS: 12 pages at 3 widths, keyboard tabs, deck memory, drag/click, persistence, launcher modes, drawer handoff, fonts, reduced motion, escaping, host remount, no chat writes.');
     } finally { await browser.close(); server.close(); }
 })().catch(error => { console.error(error); server.close(); process.exitCode = 1; });

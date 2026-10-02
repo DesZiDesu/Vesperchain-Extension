@@ -1,6 +1,6 @@
 # Vesperchain — The Black Ledger
 
-**v0.4.0 · NPC authoring, species index, purchase negotiations and money receipts**
+**v0.4.1 · Readable mobile search and action toolbars**
 
 A dark-fantasy interface with a compact ledger workspace, original SVG marks, optional animated atmosphere, and persistent interface preferences. English and Thai interface labels are included.
 
@@ -18,7 +18,7 @@ This version includes chat mechanics, scoped NPC profiles, local portraits, and 
 
 ### Updating without clearing Safari data
 
-Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.4.0** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
+Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.4.1** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
 
 Open **Extensions → Vesperchain → General → NPC Management · Profiles & portraits**, or **Black Ledger → World → People**. Select a character/chat and enable tracking if prompted. Use **Create NPC** to author a profile before or during play, or select a recorded NPC to edit its identity, scope and portrait. Blank facts are saved as undisclosed (null).
 
@@ -167,3 +167,8 @@ When a known NPC requests an owned item, creature or individual, the AI records 
 A small receipt shows **Money received / Money spent**, signed silver amount and reason at the response or decision that changed funds. Confirmed transactions, contract handovers and sales generate receipts. First establishing an unknown balance does not count as income. Later absolute-balance corrections show as balance adjustments; pending offers and negotiation do not create receipts. Reconciliation avoids repeated receipts for duplicate records. General settings has independent switches for purchase cards and money notices.
 
 Existing v1 campaigns and checkpoints remain readable; absent world-index fields are added in memory, without clearing site data. Updated checkpoints retain taxonomy, lineage and pending purchase negotiations. Older extension releases cannot understand the new optional domains in an updated checkpoint; use v0.4.0 to continue those exports.
+
+
+## Mobile toolbar fix (v0.4.1)
+
+Species and NPC search bars use a full-width search row on phones. Actions use two columns, or full-width rows at 360px and below. Search inputs keep a normal control height instead of stretching to match squeezed button labels. Desktop actions keep their natural width. Regression coverage checks control positions and heights, empty and populated rosters, Thai/English labels, 16/20px text, compact spacing, and portrait/landscape widths; horizontal overflow alone does not detect a vertically crushed button.
