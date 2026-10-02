@@ -1,6 +1,6 @@
 # Vesperchain — The Black Ledger
 
-**v0.4.1 · Readable mobile search and action toolbars**
+**v0.5.0 · In-app player guide with contents and pagination**
 
 A dark-fantasy interface with a compact ledger workspace, original SVG marks, optional animated atmosphere, and persistent interface preferences. English and Thai interface labels are included.
 
@@ -18,7 +18,7 @@ This version includes chat mechanics, scoped NPC profiles, local portraits, and 
 
 ### Updating without clearing Safari data
 
-Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.4.1** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
+Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.5.0** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
 
 Open **Extensions → Vesperchain → General → NPC Management · Profiles & portraits**, or **Black Ledger → World → People**. Select a character/chat and enable tracking if prompted. Use **Create NPC** to author a profile before or during play, or select a recorded NPC to edit its identity, scope and portrait. Blank facts are saved as undisclosed (null).
 
@@ -50,7 +50,7 @@ Ambient work pauses when the document is hidden or the interface is closed. The 
 
 ## Story ledger
 
-The ledger fills the available browser viewport, with no outer modal margin. It adapts to visual viewport changes and safe-area insets; it does not invoke the browser Fullscreen API or hide browser chrome. The desktop workspace uses a compact sidebar. On phones, the same sections appear in a horizontally scrollable navigation bar, with a separate scrolling reading area and reachable close/settings controls. There are twelve pages, including species and purchase views:
+The ledger fills the available browser viewport, with no outer modal margin. It adapts to visual viewport changes and safe-area insets; it does not invoke the browser Fullscreen API or hide browser chrome. The desktop workspace uses a compact sidebar. On phones, the same sections appear in a horizontally scrollable navigation bar, with a separate scrolling reading area and reachable close/settings controls. There are thirteen pages, including species, purchase and player-guide views:
 
 | Section | Pages |
 | --- | --- |
@@ -58,7 +58,7 @@ The ledger fills the available browser viewport, with no outer modal margin. It 
 | Collection | Collection, Research & training |
 | Commerce | Contracts, Purchase offers, Ledger & business |
 | World | People, Species index, World journal |
-| Settings & saves | Checkpoints, Settings |
+| Settings & saves | Checkpoints, Settings, Player guide |
 
 Overview shows the current scene, known resources, creature/people/project counts and up to three open contracts. Context links lead to the relevant page; **Continue in chat** closes the ledger without starting generation. Unknown resources are not replaced with starter values.
 
@@ -122,7 +122,7 @@ npm run test:browser
 
 For an existing Chromium executable, set `VESPERCHAIN_CHROMIUM` for the browser test. Runtime has zero npm dependencies; Playwright is development-only.
 
-Browser tests use a simulated SillyTavern host and cover all 12 routes at desktop, 390px, and 320px widths, deck memory, keyboard tabs, launchers, drag versus click, persistence, drawer handoff, escaped character names, font opt-out, reduced motion, and idempotent/remounted host elements. This is not a claim of a live SillyTavern or physical iPhone test. See [acceptance checks](docs/ACCEPTANCE.md).
+Browser tests use a simulated SillyTavern host and cover all 13 routes at desktop, 390px, and 320px widths, deck memory, keyboard tabs, launchers, drag versus click, persistence, drawer handoff, escaped character names, font opt-out, reduced motion, and idempotent/remounted host elements. This is not a claim of a live SillyTavern or physical iPhone test. See [acceptance checks](docs/ACCEPTANCE.md).
 
 ## เริ่มใช้งาน
 
@@ -172,3 +172,14 @@ Existing v1 campaigns and checkpoints remain readable; absent world-index fields
 ## Mobile toolbar fix (v0.4.1)
 
 Species and NPC search bars use a full-width search row on phones. Actions use two columns, or full-width rows at 360px and below. Search inputs keep a normal control height instead of stretching to match squeezed button labels. Desktop actions keep their natural width. Regression coverage checks control positions and heights, empty and populated rosters, Thai/English labels, 16/20px text, compact spacing, and portrait/landscape widths; horizontal overflow alone does not detect a vertically crushed button.
+
+
+## Player guide (v0.5.0)
+
+Open **Extensions → Vesperchain → How to play · Player guide**, use **Guide** in the ledger footer, or visit **Settings & saves → Player guide**. The guide is available without selecting a character or enabling tracking (the extension’s master switch must be enabled).
+
+The Thai/English guide has 14 short chapters: quick start, chat and UI workflow, NPC authoring, portraits and scope, species discoveries, cross-species lineage, collection and projects, contracts, sales and negotiation, money receipts, world knowledge, checkpoints, settings, and recovery. Each chapter has steps, a practical note, optional chat examples and links to the relevant pages.
+
+Use the contents cards or topic selector to jump to a chapter. **Previous / Next** reads in order with a page counter and progress bar; the first/last controls are disabled at their boundaries. Contents and chapters scroll independently from visible page controls. Pagination resets reading to the heading, and the current chapter is retained while returning to the guide in the same session. Reading does not enable tracking, change campaign state or send a message to the AI.
+
+ภาษาไทย: กด **วิธีเล่น · คู่มือระบบ** ใน Extensions หรือ **วิธีเล่น** ที่แถบล่างของสมุดบันทึก เลือกหัวข้อจากสารบัญ เลื่อนอ่านรายละเอียดในแต่ละหน้า แล้วกดก่อนหน้า/ถัดไปได้ คู่มืออธิบายระบบที่มีจริง รวมถึงการยืนยันขาย การส่งมอบสัญญา และการแยกผลการผสมที่พบจริงออกจากสมมติฐาน

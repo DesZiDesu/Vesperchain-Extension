@@ -67,3 +67,12 @@ Unit coverage includes manual NPC authoring before generation, stale edit protec
 - At phone widths, Species and NPC search fill their own row. Action labels remain readable in two columns, or one column at 360px and below. Search must not stretch to match an action's height.
 - Check empty and populated lists, Thai/English labels, 16/20px text, comfortable/compact spacing, and portrait/landscape. Search, authoring and lineage controls must remain functional.
 - Automated browser coverage measures control widths, heights and positions at 320, 390, 430, 600, 844 and 1180px. It catches the previously missed vertical-label failure, as well as horizontal overflow. Repeat on physical mobile browsers with the live host's fonts and theme.
+
+
+## Player guide acceptance (v0.5.0)
+
+- Open help from the drawer, ledger footer and Settings & saves. With no selected character or tracking off, the same contents and chapters must remain readable. The extension’s master switch still controls opening the ledger.
+- Use contents cards, topic selector, Previous/Next and Contents. Confirm first/last bounds, correct page counter, heading focus and reading reset. Close/reopen or follow a contextual page link and return; the session’s chapter should remain selected.
+- Check all 14 chapters in Thai/English at 16/20px text on narrow phones, desktop and short landscape viewports. Reading must scroll without covering the visible topic/page controls. Gear settings must close correctly when opening help from the embedded drawer.
+- Confirm help alone does not create a campaign, opt into tracking, change funds/possessions, append actions/messages, or generate a model response.
+- Automated simulated-host coverage exercises these navigation/layout/state checks at 320, 390, 844 and 1180px. Physical-device/live-host checks remain necessary; screenshots are fixture previews.

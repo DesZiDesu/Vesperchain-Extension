@@ -17,6 +17,10 @@ const server = createServer(async (req, res) => {
     const browser = await chromium.launch({ headless: true, ...(process.env.VESPERCHAIN_CHROMIUM ? { executablePath: process.env.VESPERCHAIN_CHROMIUM } : {}), args: ['--no-sandbox'] });
     const errors = [];
     try {
+        if (process.env.VESPERCHAIN_GUIDE_ONLY) {
+            await require('./guide-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
+            return;
+        }
         if (process.env.VESPERCHAIN_TOOLBAR_ONLY) {
             await require('./toolbar-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
             return;
@@ -37,7 +41,7 @@ const server = createServer(async (req, res) => {
         assert.equal(await p.locator('#vesperchain-launcher').count(), 0);
         await p.locator('#vesperchain-wand').click();
         assert.equal(await p.locator('#vesperchain-dialog').evaluate(n => n.open), true);
-        const routes = { chronicle: ['home', 'character'], domain: ['stock', 'research'], commerce: ['contracts', 'purchases', 'ledger'], world: ['npc', 'species', 'codex'], system: ['recovery', 'settings'] };
+        const routes = { chronicle: ['home', 'character'], domain: ['stock', 'research'], commerce: ['contracts', 'purchases', 'ledger'], world: ['npc', 'species', 'codex'], system: ['recovery', 'settings', 'guide'] };
         for (const width of [1180, 390, 320]) {
             await p.setViewportSize({ width, height: 1000 });
             for (const [deck, pages] of Object.entries(routes)) {
@@ -118,6 +122,7 @@ const server = createServer(async (req, res) => {
         await require('./recovery-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`);
         await require('./world-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
         await require('./toolbar-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
-        console.log('PASS: 12 pages at 3 widths, keyboard tabs, deck memory, drag/click, persistence, launcher modes, drawer handoff, fonts, reduced motion, escaping, host remount, no chat writes.');
+        await require('./guide-browser.cjs')(browser, `http://127.0.0.1:${server.address().port}`, root);
+        console.log('PASS: 13 pages at 3 widths, keyboard tabs, deck memory, drag/click, persistence, launcher modes, drawer handoff, fonts, reduced motion, escaping, host remount, no chat writes.');
     } finally { await browser.close(); server.close(); }
 })().catch(error => { console.error(error); server.close(); process.exitCode = 1; });
