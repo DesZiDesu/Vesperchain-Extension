@@ -62,3 +62,19 @@ test('character zero, avatar identities and groups are distinct', () => {
     assert.equal(identity({ groupId: 0, chatId: 'chat' }).owner, 'group:0');
     assert.equal(identity({ name2: 'Unstable display name' }), null);
 });
+
+test('unknown fields name their schema path and retain the whole confirmed state', () => {
+    const invalid = [
+        [packet('bad-top', 1, { scope: 'chat', scene: { city: 'Wrong' } }), 'record.scope'],
+        [packet('bad-scene', 1, { scene: { city: 'Wrong', time: 'Night' } }), 'record.scene.time'],
+        [packet('bad-resource', 1, { resources: { silver: 1, gold: 99 } }), 'record.resources.gold'],
+        [packet('bad-entity', 1, { entities: { creatures: [{ id: 'beast', name: 'Beast', species: 'Slime' }] } }), 'record.entities.creatures[beast].species'],
+    ];
+    const confirmed = replay(campaign(), [initial()]).state;
+    for (const [record, path] of invalid) {
+        const r = replay(campaign(), [initial(), message(record, path)]);
+        assert.deepEqual(r.state, confirmed);
+        assert.ok(r.errors[0].reason.includes(path));
+        assert.ok(r.errors[0].reason.includes('Allowed fields:'));
+    }
+});

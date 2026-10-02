@@ -38,7 +38,7 @@ The integration relies on SillyTavern's chat identity and save API. A renamed ch
 
 ## NPC presentation contract
 
-Before the one tracking block, delimit an NPC's speaking passage with `[[vc:mara]]` and `[[/vc]]`. The ID must match a complete known `npcProfiles` entry (supply it in the same record when introducing someone). Multiple quoted paragraphs are welcome. Keep narrative and single-asterisk actions outside speaker markers; only quoted speech becomes dialogue. Existing mixed passages are split in order into narration and quoted speech. Narration never gains a dialogue border or resets the speaker. Never nest markers, place them inside code blocks, or supply HTML/image URLs. Missing/invalid profiles or malformed markers retain native text rather than hiding the reply.
+Before the one tracking block, delimit an NPC's speaking passage with `[[vc:mara]]` and `[[/vc]]`. The ID must match a complete known `npcProfiles` entry (supply it in the same record when introducing someone). Multiple quoted paragraphs are welcome. Keep narrative and single-asterisk actions outside speaker markers; only quoted speech becomes dialogue. Existing mixed passages are split in order into narration and quoted speech. Narration never gains a dialogue border or resets the speaker. Never nest markers, place them inside code blocks, or supply HTML/image URLs. Well-formed passages with missing profiles or rejected tracking records show plain text without untrusted speaker headers. Malformed markers retain native text.
 
 ```text
 The candle flickers.
@@ -57,3 +57,12 @@ The renderer emits one header for each speaker run, not each paragraph or repeat
 Scope choices are user-owned, never an AI field. `current.npcScopes` and `npcPublished` track explicit sharing; `extensionSettings.vesperchainNpcCharacters[owner]` stores reusable complete identities. New chats copy those opted-in profiles into their baseline while all campaign resources/scenes start fresh. Existing chats do not retroactively import later changes. Local portrait blobs are separate from these records.
 
 Text colors use the host's `--SmartThemeBodyColor`, `--SmartThemeQuoteColor`, and `--SmartThemeEmColor`; Scene Tracker also inherits body color. Native message text is only hidden while a valid replacement is present, restored during editing or disabling. AI data is escaped, not inserted as executable HTML.
+
+
+## Rejected records and readable chat
+
+Unknown fields report their schema path and permitted keys, for example `record.scene.time` (use the documented `period` field only when its value is established). The prompt identifies `scope`, `revision`, `contracts`, `seen` and `npcScopes` as read-only state fields, not fields to copy into a tracking record. This is guidance, not a guarantee of model compliance.
+
+The scene strip’s Review record action exposes the rejected JSON as escaped, read-only text. Users may correct the original message through native editing. No automatic record repair, dropped-field acceptance or extra generation occurs. The known state remains unchanged until the full record validates.
+
+For a well-formed speaker passage, presentation can strip delimiters and show the prose even if tracking failed or a profile is absent. It creates no NPC identity or named dialogue header from rejected data. Malformed/nested markers still use native fallback. Raw messages remain unchanged and are restored for editing or when presentation is disabled.

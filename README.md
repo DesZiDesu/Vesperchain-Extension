@@ -1,6 +1,6 @@
 # Vesperchain — The Black Ledger
 
-**v0.3.0 · A compact story ledger**
+**v0.3.1 · Fullscreen ledger and tracking recovery**
 
 A dark-fantasy interface with a compact ledger workspace, original SVG marks, optional animated atmosphere, and persistent interface preferences. English and Thai interface labels are included.
 
@@ -18,7 +18,7 @@ This version includes chat mechanics, scoped NPC profiles, local portraits, and 
 
 ### Updating without clearing Safari data
 
-Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.3.0** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
+Update the extension in SillyTavern, then reload the SillyTavern page normally. Confirm **0.3.1** in the Vesperchain settings drawer. Release assets now use a version-specific directory for the complete JavaScript module graph and CSS, avoiding reuse of previous release URLs. No site-data clearing or storage migration is required. Do not delete Safari website data: local NPC portraits live in IndexedDB.
 
 Open **Extensions → Vesperchain → General → NPC Management · Profiles & portraits**, or **Black Ledger → Avarenth → NPC Management**. Select a character/chat and enable tracking if prompted. The list starts empty until a complete NPC profile is recorded; select an NPC to manage its scope and portrait. This is management of recorded NPCs, not a separate manual NPC-creation form.
 
@@ -50,7 +50,7 @@ Ambient work pauses when the document is hidden or the interface is closed. The 
 
 ## Story ledger
 
-The desktop workspace uses a compact sidebar. On phones, the same sections appear in a horizontally scrollable navigation bar, with a separate scrolling reading area and reachable close/settings controls. There are ten pages instead of sixteen:
+The ledger fills the available browser viewport, with no outer modal margin. It adapts to visual viewport changes and safe-area insets; it does not invoke the browser Fullscreen API or hide browser chrome. The desktop workspace uses a compact sidebar. On phones, the same sections appear in a horizontally scrollable navigation bar, with a separate scrolling reading area and reachable close/settings controls. There are ten pages instead of sixteen:
 
 | Section | Pages |
 | --- | --- |
@@ -135,3 +135,10 @@ The selected **Open Folio** narrative frame is installed in the chat renderer. A
 Scene, NPC and narrative text follow SillyTavern's `--mainFontFamily`, `--mainFontSize`, body/quote/emphasis colors and inherited line height. Heading and metadata sizes are proportional. Ornate fonts and extension text-size controls remain for the drawer/decks, not these chat components. Decorative spacing stays extension-controlled. This is not a claim of compatibility with every custom CSS selector or Markdown feature: the safe NPC renderer supports text, paragraphs, quotations and emphasis, not arbitrary HTML or embedded media. Parchment contracts retain their own contrasting paper palette.
 
 Portrait editing: select an image, drag directly in the square preview, and pinch with two fingers on mobile. Desktop also offers a zoom slider, mouse drag/wheel and keyboard arrows/+/- on the preview. Reset restores the centered crop; Cancel keeps the existing image. Only Use image saves the final 384px crop. The source image is temporary and is not retained after the editor closes.
+
+
+## Tracking recovery (v0.3.1)
+
+A rejected tracking record preserves the last confirmed state. It no longer prevents well-formed speaker passages from being shown as readable text: valid `[[vc:…]]` / `[[/vc]]` delimiters are removed in the display, without publishing unvalidated profiles or inventing a speaker. Native editing and disabling NPC presentation still expose the original transcript.
+
+The scene strip offers **Review record** when a record is rejected. The review displays the field path, allowed fields and a read-only copy of the original JSON. Correct the record through SillyTavern’s native message editor; normal reconciliation revalidates the selected history. Unknown fields are still rejected atomically. The generation prompt now explicitly separates the read-only state snapshot from the permitted output fields.

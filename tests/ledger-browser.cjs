@@ -28,7 +28,7 @@ module.exports = async function ledgerSuite(browser, base, root) {
     assert.equal(await p.locator('#vc-page').getByRole('button', { name: 'จุดบันทึก', exact: true }).count(), 1);
     for (const width of [1180, 390, 320]) {
         await p.setViewportSize({ width, height: 900 });
-        assert.equal(await p.locator('.vc-decks').getAttribute('aria-orientation'), width > 700 ? 'vertical' : 'horizontal');
+        await p.waitForFunction(expected => document.querySelector('.vc-decks').getAttribute('aria-orientation') === expected, width > 700 ? 'vertical' : 'horizontal');
         for (const [deck, route, expected] of [['domain', 'stock', ['creatures', 'inventory', 'shops']], ['domain', 'research', ['projects']], ['commerce', 'ledger', ['branches']], ['world', 'codex', ['notes', 'factions', 'routes']]]) {
             await p.locator(`[data-deck=${deck}]`).click();
             await p.locator(`.vc-tabs [data-page=${route}]`).click();
